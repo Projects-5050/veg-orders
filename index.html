@@ -149,6 +149,34 @@ table.t td.q{text-align:end;font-weight:600;font-variant-numeric:tabular-nums;wh
 .ed button{height:40px}
 @media (max-width:560px){.ed{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px}.ed select{grid-row:2}.ed .catsel{display:none}.ed{padding-bottom:8px;border-bottom:1px solid var(--line)}}
 .pins{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-block:18px}
+.filters .fx{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filters input[type=date]{direction:ltr;text-align:right}
+@media (max-width:640px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+table.rt tbody tr{cursor:pointer}
+table.rt tbody tr:hover td{background:var(--sheet)}
+table.rt td{white-space:nowrap}
+.linkbtn{background:none;border:0;padding:6px 0;color:var(--ink-2);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:4px;align-self:center}
+.linkbtn:hover{color:var(--red)}
+.code{font-family:var(--display);font-size:22px;letter-spacing:.12em;direction:ltr;text-align:center;border:2px dashed var(--line-strong);border-radius:var(--r);padding:12px;user-select:all}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.tile{border:1.5px solid var(--line-strong);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:8px;cursor:pointer;background:var(--paper);transition:background .2s}
+.tile:hover{background:var(--sheet)}
+.tile .th{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.tile .tq{font-size:14px;color:var(--ink-2)} .tile .tq b{font-family:var(--display);font-size:22px;color:var(--ink);margin-inline-end:4px}
+.tile .tu{display:block;font-size:13px;color:var(--ink)}
+.tile .tn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbtn{margin-top:auto;min-height:48px;border:0;border-radius:var(--r);background:var(--red);color:var(--red-ink);font-weight:700;font-size:16px;font-family:var(--display)}
+.tbtn:hover{filter:brightness(.94)}
+.tile.received,.tile.delivered{border-color:var(--ok);background:var(--ok-soft)}
+.tile.received:hover,.tile.delivered:hover{background:var(--ok-soft);filter:brightness(.98)}
+.tstamp{margin-top:auto;display:flex;flex-direction:column;color:var(--ok);line-height:1.4}
+.tstamp b{font-family:var(--display);font-size:15px}.tstamp span{font-size:13px}
+.tile.none{border-style:dashed;border-color:var(--line);cursor:default;color:var(--ink-3)}
+.tile.none:hover{background:var(--paper)} .tile.none h3{color:var(--ink-3)}
+.stamps{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:8px}
+.stamp{display:flex;justify-content:space-between;gap:8px;color:var(--ok);font-size:13px;flex-wrap:wrap}
+.log{margin:6px 0 0;padding-inline-start:18px;font-size:13px;color:var(--ink-2);display:flex;flex-direction:column;gap:2px}
 .toast{position:fixed;inset-inline:0;bottom:calc(96px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;z-index:60;pointer-events:none}
 .toast div{background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:var(--r);font-weight:600;font-size:14px;max-width:90vw}
 .done{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:12px 0}
@@ -179,6 +207,7 @@ table.t td.q{text-align:end;font-weight:600;font-variant-numeric:tabular-nums;wh
 .pp td.k{width:80px}
 .pp td.en{direction:ltr;text-align:left;font-size:13px;color:#5E5B57;letter-spacing:.02em}
 .pp .note{margin-top:16px;border:1.5px dashed #8E8A85;padding:10px 12px;font-size:14px}
+.pp .rcv{margin-top:14px;font-size:14px;color:#1F7A45;border:1.5px solid #1F7A45;padding:8px 12px}
 .pp .sig{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:48px;font-size:13px;color:#5E5B57}
 .pp .sig div{border-top:1.5px solid #141414;padding-top:6px}
 .pp .foot{position:absolute;bottom:28px;right:52px;left:52px;display:flex;justify-content:space-between;font-size:11px;color:#8E8A85;border-top:1px solid #E6E3DF;padding-top:8px}
@@ -197,7 +226,7 @@ table.t td.q{text-align:end;font-weight:600;font-variant-numeric:tabular-nums;wh
 const SB_URL = "https://lzadmbjhcxqvafykntsp.supabase.co";
 const SB_KEY = "sb_publishable_X4VEzOBLuT8d-b7Tsz9IJQ_1QHW9BIe";
 const AR = {"Aali":"عالي","Hamad Town":"مدينة حمد","Jeblat Hebshi":"جبلة حبشي","Malikya":"المالكية","Muharraq":"المحرق","Saar":"سار","Sanad":"سند","Sitra":"سترة","Zinj":"الزنج"};
-const UNITS = ["كيلو","كرتون","كيس","ربطة","حبة","صندوق","علبة","صينية"];
+const UNITS = ["كيلو","صرة","كرتون","كيس","حبة","صندوق"];
 const CATS = ["ورقيات","خضار","أعشاب","فواكه"];
 const STATUS = {new:"جديد",received:"استلمه المورد",delivered:"تم التوصيل",cancelled:"ملغي"};
 const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -224,9 +253,26 @@ function dayLabel(iso){
   const rel = iso === bhDate(0) ? "اليوم" : iso === bhDate(1) ? "بكرة" : iso === bhDate(-1) ? "أمس" : "";
   return {s, rel};
 }
+function stampLabel(ts){
+  const d = new Date(ts), z = {timeZone:"Asia/Bahrain"};
+  return new Intl.DateTimeFormat("ar-BH-u-nu-latn",{...z,hour:"numeric",minute:"2-digit"}).format(d) + " · " + new Intl.DateTimeFormat("ar-BH-u-nu-latn",{...z,day:"numeric",month:"long"}).format(d);
+}
+const LOGNAME = {received:"استلمه المورد", delivered:"تم التوصيل", undo:"تراجع عن الاستلام", cancelled:"ألغاه الفرع"};
+const ROLENAME = {supplier:"المورد", admin:"الإدارة", branch:"الفرع"};
+function unitTotals(items){
+  const m = {}; items.forEach(l => m[l.unit] = (m[l.unit]||0) + Number(l.qty));
+  return Object.entries(m).sort((a,b) => (a[0]==="كيلو"?-1:b[0]==="كيلو"?1:0)).map(([u,q]) => `${fmtQty(q)} ${u}`).join(" · ");
+}
+function stampsHtml(o){
+  let h = "";
+  if (o.received_at) h += `<div class="stamp"><span>✓ استلمه المورد</span><b class="num">${esc(stampLabel(o.received_at))}</b></div>`;
+  if (o.delivered_at) h += `<div class="stamp"><span>✓ تم التوصيل</span><b class="num">${esc(stampLabel(o.delivered_at))}</b></div>`;
+  return h ? `<div class="stamps">${h}</div>` : "";
+}
 function timeLabel(ts){ return new Intl.DateTimeFormat("ar-BH-u-nu-latn",{timeZone:"Asia/Bahrain",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}).format(new Date(ts)); }
 
 async function rpc(fn, args={}){
+  if (window.VEG_DEMO) return window.VEG_DEMO.rpc(fn, args);
   const r = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, {method:"POST",
     headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`,"Content-Type":"application/json"}, body:JSON.stringify(args)});
   const t = await r.text(); let j = null; try { j = t ? JSON.parse(t) : null; } catch {}
@@ -237,6 +283,11 @@ function errMsg(e){
   const m = String(e && e.message || e);
   if (m.includes("unauthorized")) return "الرقم السري غير صحيح.";
   if (m.includes("empty")) return "أضف كمية لصنف واحد على الأقل.";
+  if (m.includes("pin_taken")) return "هذا الرقم مستخدم لحساب ثاني. اختر رقم غيره.";
+  if (m.includes("pin_short")) return "الرقم قصير. الفرع والمورد 4 أرقام على الأقل، والإدارة 6.";
+  if (m.includes("pin_digits")) return "الرقم السري لازم يكون أرقام فقط.";
+  if (m.includes("bad_code")) return "رمز الاسترجاع غير صحيح.";
+  if (m.includes("too_many")) return "محاولات كثيرة. انتظر 15 دقيقة وحاول مرة ثانية.";
   if (m.includes("locked")) return "ما يمكن إلغاء الطلب بعد ما استلمه المورد.";
   if (m.includes("Failed to fetch") || m.includes("تعذّر")) return "ما في اتصال بالإنترنت. حاول مرة ثانية.";
   return "صار خطأ. حاول مرة ثانية.";
@@ -251,6 +302,7 @@ const ICON = {
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>',
   right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
   left:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>',
+  key:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 8.2-8.2m-3 3 2 2m-4.5-.5 2 2"/></svg>',
   refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>'
 };
 
@@ -283,6 +335,8 @@ async function boot(){
 }
 function route(){
   if (!S.session) return renderLogin();
+  if (S.view === "search" && S.session.role === "admin") { clearInterval(boardTimer); return renderSearch(); }
+  if (S.view === "search") S.view = S.session.role === "branch" ? "order" : "board";
   if (S.session.role === "branch") return S.view === "history" ? renderHistory() : renderOrder();
   if (S.session.role === "admin" && S.view === "settings") return renderSettings();
   return renderSupplier();
@@ -307,6 +361,7 @@ function renderLogin(){
       <div class="field"><label for="lp">الرقم السري</label><input class="input num" id="lp" inputmode="numeric" autocomplete="current-password" type="password" placeholder="••••"></div>
       <div class="err" id="le" role="alert"></div>
       <button class="btn primary block" id="lgo">دخول</button>
+      <button type="button" class="linkbtn" id="lforgot">نسيت الرقم السري؟</button>
     </form>
   </div>`;
   const last = ls.get("veg.lastBranch"); if (last) $("#lb").value = last;
@@ -315,6 +370,7 @@ function renderLogin(){
     $("#bf").hidden = role !== "branch"; $("#le").textContent = "";
   });
   ["lb","lp"].forEach(id => $("#"+id).addEventListener("input", () => $("#le").textContent = ""));
+  $("#lforgot").onclick = () => openForgot(role, role === "branch" ? $("#lb").value : null);
   $("#lf").onsubmit = async ev => {
     ev.preventDefault();
     const pin = $("#lp").value.trim(), branch = role === "branch" ? $("#lb").value : null;
@@ -338,8 +394,15 @@ function header(sub, tabs){
   const s = S.session;
   return `<header class="top"><div class="brand"><b>طلبات الخضرة</b><span>${esc(sub)}</span></div>
     <div style="display:flex;align-items:center;gap:8px">${s.role==="branch"?`<span class="tag">${esc(bn(s.branchName))}</span>`:s.role==="supplier"?`<span class="tag">المورد</span>`:`<span class="tag">الإدارة</span>`}
+    <button class="iconbtn" aria-label="تغيير الرقم السري" title="تغيير الرقم السري" onclick="openChangePin()">${ICON.key}</button>
     <button class="iconbtn" aria-label="خروج" title="خروج" onclick="logout()">${ICON.out}</button></div></header>
     ${tabs?`<nav class="tabs" role="tablist">${tabs.map(t=>`<button role="tab" aria-selected="${S.view===t[0]}" onclick="S.view='${t[0]}';route()">${t[1]}</button>`).join("")}</nav>`:""}`;
+}
+function tabsFor(){
+  const r = S.session.role;
+  if (r === "branch") return [["order","طلب جديد"],["history","طلباتي"]];
+  if (r === "admin") return [["board","طلبات الفروع"],["search","البحث"],["settings","الإعدادات"]];
+  return null;
 }
 function saveDraft(){ if (S.session && S.session.branch) ls.set("veg.draft." + S.session.branch, {qty:S.qty, note:S.note}); }
 function selectedLines(){
@@ -348,7 +411,7 @@ function selectedLines(){
 function renderOrder(){
   const items = S.boot.items, cats = ["الكل", ...CATS.filter(c => items.some(i=>i.category===c)), ...[...new Set(items.map(i=>i.category))].filter(c=>!CATS.includes(c))];
   const dl = dayLabel(S.delivery);
-  $("#app").innerHTML = header("طلب جديد", [["order","طلب جديد"],["history","طلباتي"]]) + `
+  $("#app").innerHTML = header("طلب جديد", tabsFor()) + `
     <div class="datebar">
       <div class="d"><span class="faint">التوصيل</span><b>${dl.rel ? dl.rel + " · " : ""}${esc(dl.s)}</b></div>
       <div class="dnav"><button class="iconbtn" aria-label="اليوم السابق" onclick="setDelivery(-1)">${ICON.right}</button>
@@ -452,7 +515,7 @@ function showSent(o){
 
 /* ---------- branch: history ---------- */
 async function renderHistory(){
-  $("#app").innerHTML = header("طلباتي", [["order","طلب جديد"],["history","طلباتي"]]) + `<div class="list" id="hl"><div class="empty">جاري التحميل…</div></div>`;
+  $("#app").innerHTML = header("طلباتي", tabsFor()) + `<div class="list" id="hl"><div class="empty">جاري التحميل…</div></div>`;
   try { S.history = await rpc("veg_branch_orders",{p_branch:S.session.branch,p_pin:S.session.pin}); }
   catch(e){ $("#hl").innerHTML = `<div class="empty">${errMsg(e)}</div>`; return; }
   if (!S.history.length){ $("#hl").innerHTML = `<div class="empty"><h3>ما في طلبات لهذا الفرع بعد</h3><p>أول طلب ترسله يظهر هنا مع حالته.</p><button class="btn primary" onclick="S.view='order';route()">طلب جديد</button></div>`; return; }
@@ -468,17 +531,19 @@ function orderCard(o, mode){
   if (o.status !== "cancelled"){
     acts += `<button class="btn sm" data-a="pdf">PDF</button>`;
     if (mode === "branch"){ acts += `<button class="btn sm" data-a="wa">واتساب</button>`; if (o.status === "new") acts += `<button class="btn sm ghost" data-a="cancel">إلغاء</button>`; }
-    else { if (o.status === "new") acts += `<button class="btn sm dark" data-a="received">تم الاستلام</button>`;
-           if (o.status !== "delivered") acts += `<button class="btn sm primary" data-a="delivered">تم التوصيل</button>`;
-           else acts += `<button class="btn sm ghost" data-a="new">إرجاع لجديد</button>`; }
+    else { if (o.status === "new") acts += `<button class="btn sm primary" data-a="received">تم الاستلام</button>`;
+           if (o.status === "received") acts += `<button class="btn sm dark" data-a="delivered">تم التوصيل</button>`;
+           if (o.status !== "new") acts += `<button class="btn sm ghost" data-a="new">تراجع عن الاستلام</button>`; }
   }
   return `<article class="card ${o.status==="new"?"new":""}" data-id="${o.id}">
     <div class="h"><div><h3>${head}</h3><div class="faint">${sub} · ${o.items.length} صنف</div></div><span class="pill ${o.status}">${STATUS[o.status]}</span></div>
     ${o.status!=="cancelled"?`<details${mode!=="branch"?" open":""}><summary class="faint" style="cursor:pointer">الأصناف</summary>${linesTable(o.items)}</details>`:""}
     ${o.note?`<div class="faint">ملاحظة: <span style="color:var(--ink)">${esc(o.note)}</span></div>`:""}
+    ${stampsHtml(o)}
+    ${mode!=="branch" && o.log && o.log.length ? `<details><summary class="faint" style="cursor:pointer">السجل (${o.log.length})</summary><ul class="log">${o.log.map(l=>`<li><b class="num">${esc(stampLabel(l.at))}</b> · ${esc(LOGNAME[l.action]||l.action)}${l.by?` · ${esc(ROLENAME[l.by]||l.by)}`:""}</li>`).join("")}</ul></details>` : ""}
     ${acts?`<div class="acts">${acts}</div>`:""}</article>`;
 }
-function bindCards(root, list, mode){
+function bindCards(root, list, mode, onDone){
   root.querySelectorAll(".card").forEach(c => {
     const o = list.find(x => String(x.id) === c.dataset.id);
     c.querySelectorAll("[data-a]").forEach(b => b.onclick = async () => {
@@ -491,8 +556,11 @@ function bindCards(root, list, mode){
         catch(e){ toast(errMsg(e)); }
         return;
       }
+      if (a === "new" && b.dataset.sure !== "1"){ b.dataset.sure = "1"; b.textContent = "متأكد؟ اضغط للتراجع"; b.classList.add("primary"); return; }
       b.setAttribute("aria-busy","true");
-      try { await rpc("veg_set_status",{p_pin:S.session.pin,p_id:o.id,p_status:a}); toast(a==="delivered"?"تم تسجيل التوصيل":a==="received"?"تم تسجيل الاستلام":"رجع الطلب لجديد"); loadBoard(true); }
+      try { const r = await rpc("veg_set_status",{p_pin:S.session.pin,p_id:o.id,p_status:a});
+        toast(a==="delivered"?"تم تسجيل التوصيل · "+stampLabel(r.delivered_at):a==="received"?"تم تسجيل الاستلام · "+stampLabel(r.received_at):"تم التراجع عن الاستلام");
+        if (onDone) onDone(r); else loadBoard(true); }
       catch(e){ toast(errMsg(e)); b.removeAttribute("aria-busy"); }
     });
   });
@@ -503,16 +571,16 @@ let boardTimer = null;
 function renderSupplier(){
   const isAdmin = S.session.role === "admin";
   const dl = dayLabel(S.date);
-  $("#app").innerHTML = header(isAdmin ? "لوحة الإدارة" : "لوحة المورد", isAdmin ? [["board","طلبات الفروع"],["settings","الإعدادات"]] : null) + `
+  $("#app").innerHTML = header(isAdmin ? "لوحة الإدارة" : "لوحة المورد", tabsFor()) + `
     <div class="datebar">
       <div class="d"><span class="faint">طلبات التوصيل ليوم</span><b>${dl.rel?dl.rel+" · ":""}${esc(dl.s)}</b></div>
       <div class="dnav"><button class="iconbtn" aria-label="اليوم السابق" onclick="S.date=shiftDate(S.date,-1);renderSupplier()">${ICON.right}</button>
         <button class="iconbtn" aria-label="اليوم التالي" onclick="S.date=shiftDate(S.date,1);renderSupplier()">${ICON.left}</button>
         <button class="iconbtn" aria-label="تحديث" onclick="loadBoard(true)">${ICON.refresh}</button></div>
     </div>
-    <div class="stats"><div><b class="num" id="s1">–</b><span>فروع طلبت من ${S.boot.branches.length}</span></div><div><b class="num" id="s2">–</b><span>طلبات جديدة</span></div><div><b class="num" id="s3">–</b><span>تم توصيلها</span></div></div>
+    <div class="stats"><div><b class="num" id="s1">–</b><span>فروع طلبت من ${S.boot.branches.length}</span></div><div><b class="num" id="s2">–</b><span>بانتظار الاستلام</span></div><div><b class="num" id="s3">–</b><span>تم استلامها</span></div></div>
     <div id="miss"></div>
-    <div class="acts" style="margin-top:12px"><button class="btn primary" id="allpdf">PDF مجمّع لكل الفروع</button><button class="btn" id="tot">مجموع الكميات</button></div>
+    <div class="acts" style="margin-top:12px"><button class="btn primary" id="allpdf">PDF مجمّع لكل الفروع</button><button class="btn" id="tot">مجموع الكميات</button>${isAdmin?`<button class="btn dark" onclick="S.view='search';route()">البحث في الطلبات</button>`:""}</div>
     <div class="list" id="bl"><div class="empty">جاري التحميل…</div></div>`;
   $("#allpdf").onclick = e => { const l = S.orders.filter(o=>o.status!=="cancelled"); if (!l.length) return toast("ما في طلبات لهذا اليوم"); downloadPdf(l, e.currentTarget, true); };
   $("#tot").onclick = () => { const l = S.orders.filter(o=>o.status!=="cancelled"); if (!l.length) return toast("ما في طلبات لهذا اليوم");
@@ -532,18 +600,177 @@ async function loadBoard(quiet){
   catch(e){ bl.innerHTML = `<div class="empty">${errMsg(e)}</div>`; return; }
   const live = S.orders.filter(o=>o.status!=="cancelled");
   const ids = new Set(live.map(o=>o.branch_id));
-  $("#s1").textContent = ids.size; $("#s2").textContent = live.filter(o=>o.status==="new").length; $("#s3").textContent = live.filter(o=>o.status==="delivered").length;
+  $("#s1").textContent = ids.size; $("#s2").textContent = live.filter(o=>o.status==="new").length; $("#s3").textContent = live.filter(o=>o.status!=="new").length;
   const missing = S.boot.branches.filter(b => !ids.has(b.id));
   $("#miss").innerHTML = missing.length && live.length ? `<div class="faint" style="margin-bottom:6px">ما طلبت بعد:</div><div class="missing">${missing.map(b=>`<span>${esc(bn(b.name))}</span>`).join("")}</div>` : "";
-  bl.innerHTML = S.orders.length ? S.orders.map(o => orderCard(o, "supplier")).join("") : `<div class="empty"><h3>ما في طلبات لهذا اليوم</h3><p>لما يرسل مدير فرع طلبه يظهر هنا مباشرة. الصفحة تتحدث كل دقيقة.</p></div>`;
-  bindCards(bl, S.orders, "supplier");
-  if (!quiet) animateIn("#bl .card");
+  $("#miss").innerHTML = "";
+  if (!live.length){ bl.innerHTML = `<div class="empty"><h3>ما في طلبات لهذا اليوم</h3><p>لما يرسل مدير فرع طلبه يظهر هنا مباشرة. الصفحة تتحدث كل دقيقة.</p></div>`; return; }
+  const tile = o => {
+    const st = o.status;
+    const foot = st === "new" ? `<button class="tbtn" data-recv="${o.id}">تم الاستلام</button>`
+      : `<div class="tstamp"><b>✓ ${st==="delivered"?"تم التوصيل":"استُلم"}</b><span class="num">${esc(stampLabel(st==="delivered"?o.delivered_at:o.received_at))}</span></div>`;
+    return `<article class="tile ${st}" data-open="${o.id}" tabindex="0" aria-label="${esc(bn(o.branch_name))}">
+      <div class="th"><h3>${esc(bn(o.branch_name))}</h3><span class="faint">${onum(o.id)}</span></div>
+      <div class="tq"><b class="num">${o.items.length}</b> صنف<span class="tu num">${esc(unitTotals(o.items))}</span></div>
+      ${o.note?`<div class="faint tn">ملاحظة: ${esc(o.note)}</div>`:""}
+      ${foot}</article>`;
+  };
+  bl.innerHTML = `<div class="tiles">${live.map(tile).join("")}${missing.map(b=>`<article class="tile none"><div class="th"><h3>${esc(bn(b.name))}</h3></div><div class="faint">ما طلب لهذا اليوم</div></article>`).join("")}</div>`;
+  bl.querySelectorAll("[data-recv]").forEach(btn => btn.onclick = async e => {
+    e.stopPropagation(); btn.setAttribute("aria-busy","true"); btn.textContent = "جاري التسجيل…";
+    try { const r = await rpc("veg_set_status",{p_pin:S.session.pin,p_id:Number(btn.dataset.recv),p_status:"received"});
+      toast("تم تسجيل الاستلام · " + stampLabel(r.received_at)); await loadBoard(true);
+      const t = $(`[data-open="${r.id}"]`, bl); if (t && !RM && window.gsap) gsap.fromTo(t, {scale:.96}, {scale:1, duration:.35, ease:"back.out(2.5)"}); }
+    catch(err){ toast(errMsg(err)); btn.removeAttribute("aria-busy"); btn.textContent = "تم الاستلام"; }
+  });
+  bl.querySelectorAll("[data-open]").forEach(t => {
+    const open = () => { const o = live.find(x => String(x.id) === t.dataset.open);
+      const m = modal(orderCard(o, "supplier") + `<button class="btn ghost block" id="mc">إغلاق</button>`);
+      $("#mc", m).onclick = () => m.remove();
+      bindCards(m, [o], "supplier", () => { m.remove(); loadBoard(true); }); };
+    t.onclick = open; t.onkeydown = e => { if (e.key === "Enter" && e.target === t) open(); };
+  });
+  if (!quiet) animateIn("#bl .tile");
 }
+
+/* ---------- PIN change & recovery ---------- */
+function pinForm(fields){
+  return fields.map(([id,label,ph]) => `<div class="field"><label for="${id}">${label}</label><input class="input num" id="${id}" type="password" inputmode="numeric" autocomplete="off" placeholder="${ph||""}"></div>`).join("");
+}
+function openChangePin(){
+  const s = S.session, min = s.role === "admin" ? 6 : 4;
+  const who = s.role === "branch" ? "فرع " + bn(s.branchName) : s.role === "supplier" ? "المورد" : "الإدارة";
+  const m = modal(`<h2>تغيير الرقم السري</h2><p class="muted" style="margin:0">${esc(who)} · ${min} أرقام على الأقل</p>
+    <form id="cpf" style="display:flex;flex-direction:column;gap:12px" novalidate>
+      ${pinForm([["cp0","الرقم الحالي"],["cp1","الرقم الجديد"],["cp2","أعد كتابة الرقم الجديد"]])}
+      <div class="err" id="cpe" role="alert"></div>
+      <div style="display:flex;gap:8px"><button type="button" class="btn ghost" id="cpx">إلغاء</button><button class="btn primary" style="flex:1" id="cpgo">حفظ الرقم الجديد</button></div></form>`);
+  ["cp0","cp1","cp2"].forEach(id => $("#"+id, m).addEventListener("input", () => $("#cpe", m).textContent = ""));
+  $("#cpx", m).onclick = () => m.remove();
+  $("#cpf", m).onsubmit = async e => { e.preventDefault();
+    const o = $("#cp0", m).value.trim(), n = $("#cp1", m).value.trim(), n2 = $("#cp2", m).value.trim(), er = $("#cpe", m);
+    if (!o) return er.textContent = "اكتب الرقم الحالي.";
+    if (!/^\d+$/.test(n)) return er.textContent = "الرقم الجديد لازم يكون أرقام فقط.";
+    if (n.length < min) return er.textContent = `الرقم الجديد لازم يكون ${min} أرقام على الأقل.`;
+    if (n !== n2) return er.textContent = "الرقمين الجديدين مو متطابقين.";
+    if (n === o) return er.textContent = "الرقم الجديد نفس الحالي.";
+    const b = $("#cpgo", m); b.setAttribute("aria-busy","true");
+    try { await rpc("veg_change_pin",{p_role:s.role,p_branch:s.branch||null,p_old:o,p_new:n});
+      S.session.pin = n; ls.set("veg.session", S.session); m.remove(); toast("تم تغيير الرقم السري"); }
+    catch(err){ er.textContent = errMsg(err); b.removeAttribute("aria-busy"); }
+  };
+}
+function openForgot(role, branchId){
+  const aw = S.boot.admin_whatsapp || "";
+  if (role !== "admin"){
+    const who = role === "branch" ? (branchId ? "فرع " + bn((S.boot.branches.find(b=>b.id===branchId)||{}).name) : "فرع") : "المورد";
+    const msg = `السلام عليكم، نسيت الرقم السري لتطبيق طلبات الخضرة (${who}). أبي رقم جديد.`;
+    const m = modal(`<h2>نسيت الرقم السري؟</h2>
+      <p style="margin:0">الإدارة تعطيك رقم جديد. أرسل لها طلب على الواتساب، وبعد ما توصلك الرسالة بالرقم الجديد ادخل فيه، وتقدر تغيّره بعدها من زر المفتاح فوق.</p>
+      ${aw ? `<a class="btn primary block" href="https://wa.me/${esc(aw)}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">طلب رقم جديد بالواتساب</a>
+             <p class="faint" style="margin:0;text-align:center">واتساب الإدارة: <span class="num" dir="ltr">+${esc(aw)}</span></p>`
+           : `<p class="faint" style="margin:0">تواصل مع الإدارة مباشرة.</p>`}
+      <button class="btn ghost block" id="fx">رجوع</button>`);
+    $("#fx", m).onclick = () => m.remove(); return;
+  }
+  const m = modal(`<h2>استرجاع رقم الإدارة</h2><p class="muted" style="margin:0">اكتب رمز الاسترجاع اللي حفظته، واختر رقم جديد (6 أرقام على الأقل).</p>
+    <form id="rf" style="display:flex;flex-direction:column;gap:12px" novalidate>
+      <div class="field"><label for="rc">رمز الاسترجاع</label><input class="input" id="rc" dir="ltr" autocomplete="off" autocapitalize="characters" placeholder="XXXX-XXXX-XXXX"></div>
+      ${pinForm([["rn1","رقم الإدارة الجديد"],["rn2","أعد كتابة الرقم"]])}
+      <div class="err" id="re2" role="alert"></div>
+      <div style="display:flex;gap:8px"><button type="button" class="btn ghost" id="rx">إلغاء</button><button class="btn primary" style="flex:1" id="rgo">تعيين الرقم</button></div></form>`);
+  ["rc","rn1","rn2"].forEach(id => $("#"+id, m).addEventListener("input", () => $("#re2", m).textContent = ""));
+  $("#rx", m).onclick = () => m.remove();
+  $("#rf", m).onsubmit = async e => { e.preventDefault();
+    const c = $("#rc", m).value.trim(), n = $("#rn1", m).value.trim(), n2 = $("#rn2", m).value.trim(), er = $("#re2", m);
+    if (!c) return er.textContent = "اكتب رمز الاسترجاع.";
+    if (!/^\d{6,}$/.test(n)) return er.textContent = "رقم الإدارة لازم يكون 6 أرقام على الأقل.";
+    if (n !== n2) return er.textContent = "الرقمين مو متطابقين.";
+    const b = $("#rgo", m); b.setAttribute("aria-busy","true");
+    try { const code = await rpc("veg_recover_admin",{p_code:c,p_new:n});
+      $(".sheet", m).innerHTML = `<div class="done"><div class="check">${ICON.check}</div><h2>تم تعيين رقم الإدارة</h2></div>
+        <p style="margin:0">الرمز القديم توقف. هذا رمز الاسترجاع الجديد، احفظه في مكان آمن:</p><div class="code">${esc(code)}</div>
+        <button class="btn primary block" id="rok">دخول</button>`;
+      $("#rok", m).onclick = () => { m.remove(); $("#lp").value = n; $("#lf").requestSubmit(); };
+    } catch(err){ er.textContent = errMsg(err); b.removeAttribute("aria-busy"); }
+  };
+}
+
+/* ---------- search ---------- */
+function monthStart(){ return bhDate(0).slice(0,8) + "01"; }
+function renderSearch(){
+  const isBranch = S.session.role === "branch";
+  const F = S.f || (S.f = {branch:"", item:"", from:monthStart(), to:bhDate(7), status:"", order:""});
+  $("#app").innerHTML = header("البحث في الطلبات", tabsFor()) + `
+  <form id="sf" class="filters" novalidate>
+    <div class="field"><label for="fb">الفرع</label>
+      ${isBranch ? `<input class="input" id="fb" value="${esc(bn(S.session.branchName))}" disabled>` :
+      `<select class="input" id="fb"><option value="">كل الفروع</option>${S.boot.branches.map(b=>`<option value="${b.id}" ${F.branch===b.id?"selected":""}>${esc(bn(b.name))}</option>`).join("")}</select>`}</div>
+    <div class="field"><label for="fi">الصنف</label>
+      <select class="input" id="fi"><option value="">كل الأصناف</option>${S.boot.items.map(i=>`<option value="${esc(i.name)}" ${F.item===i.name?"selected":""}>${esc(i.name)}${i.name_en?" · "+esc(i.name_en):""}</option>`).join("")}</select></div>
+    <div class="field"><label for="fs">الحالة</label>
+      <select class="input" id="fs"><option value="">كل الحالات</option>${Object.entries(STATUS).map(([k,v])=>`<option value="${k}" ${F.status===k?"selected":""}>${v}</option>`).join("")}</select></div>
+    <div class="field"><label for="ff">من تاريخ التوصيل</label><input class="input num" type="date" id="ff" value="${F.from}"></div>
+    <div class="field"><label for="ft">إلى تاريخ التوصيل</label><input class="input num" type="date" id="ft" value="${F.to}"></div>
+    <div class="field"><label for="fo">رقم الطلب</label><input class="input num" id="fo" inputmode="numeric" placeholder="45" value="${esc(F.order)}"></div>
+    <div class="fx"><button class="btn primary" id="sgo">بحث</button><button type="button" class="btn ghost" id="sclr">مسح الفلاتر</button>
+      <span class="err" id="serr" role="alert"></span></div>
+  </form>
+  <div id="sr"></div>`;
+  $("#sclr").onclick = () => { S.f = null; renderSearch(); };
+  ["ff","ft","fo"].forEach(id => $("#"+id).addEventListener("input", () => $("#serr").textContent = ""));
+  $("#sf").onsubmit = e => { e.preventDefault(); runSearch(); };
+  runSearch();
+}
+async function runSearch(){
+  const isBranch = S.session.role === "branch", F = S.f;
+  if (!isBranch) F.branch = $("#fb").value;
+  F.item = $("#fi").value; F.status = $("#fs").value; F.from = $("#ff").value; F.to = $("#ft").value; F.order = $("#fo").value.replace(/\D/g,"");
+  if (F.from && F.to && F.from > F.to) return $("#serr").textContent = "تاريخ البداية بعد تاريخ النهاية.";
+  const sr = $("#sr"); sr.innerHTML = `<div class="empty">جاري البحث…</div>`;
+  try {
+    S.results = await rpc("veg_search", {p_pin:S.session.pin, p_auth_branch:isBranch?S.session.branch:null, p_branch:F.branch||null,
+      p_item:F.item||null, p_from:F.from||null, p_to:F.to||null, p_status:F.status||null, p_order:F.order?Number(F.order):null});
+  } catch(e){ sr.innerHTML = `<div class="empty">${errMsg(e)}</div>`; return; }
+  drawResults();
+}
+function drawResults(){
+  const R = S.results, F = S.f, sr = $("#sr");
+  if (!R.length){ sr.innerHTML = `<div class="empty"><h3>ما في طلبات بهذي الفلاتر</h3><p>وسّع الفترة أو اختر «كل الأصناف».</p></div>`; return; }
+  const live = R.filter(o => o.status !== "cancelled");
+  const itemQty = o => { const l = o.items.find(x => x.name === F.item); return l ? Number(l.qty) : 0; };
+  const itemUnit = F.item ? ((S.boot.items.find(i => i.name === F.item) || {}).unit || "") : "";
+  const sumItem = F.item ? live.reduce((a,o) => a + itemQty(o), 0) : null;
+  sr.innerHTML = `
+    <div class="stats"><div><b class="num">${R.length}${R.length>=500?"+":""}</b><span>طلب</span></div>
+      <div><b class="num">${new Set(live.map(o=>o.branch_id)).size}</b><span>فرع</span></div>
+      ${F.item ? `<div><b class="num">${fmtQty(sumItem)}</b><span>${esc(F.item)} (${esc(itemUnit)})</span></div>` : `<div><b class="num">${live.filter(o=>o.status==="delivered").length}</b><span>تم توصيلها</span></div>`}</div>
+    <div class="acts" style="margin-bottom:10px"><button class="btn" id="stot">مجموع الكميات</button>${S.session.role!=="branch"?`<button class="btn" id="spdf">PDF للنتائج</button>`:""}</div>
+    <div class="tw"><table class="t rt"><thead><tr><th>رقم</th><th>الفرع</th><th>التوصيل</th><th>الحالة</th><th>الاستلام</th><th style="text-align:end">${F.item?esc(F.item):"الأصناف"}</th></tr></thead><tbody>
+    ${R.map(o => `<tr data-id="${o.id}" tabindex="0"><td>${onum(o.id)}</td><td>${esc(bn(o.branch_name))}</td><td class="num">${esc(shortDate(o.delivery_date))}</td>
+      <td><span class="pill ${o.status}">${STATUS[o.status]}</span></td><td class="num faint">${o.received_at?esc(stampLabel(o.received_at)):"—"}</td><td class="q">${F.item ? fmtQty(itemQty(o)) : o.items.length}</td></tr>`).join("")}
+    </tbody></table></div>`;
+  $("#stot").onclick = () => { if (!live.length) return toast("كل النتائج ملغية");
+    modal(`<h2>مجموع الكميات</h2><div class="muted">${live.length} طلب · ${esc(rangeLabel())}</div>${linesTable(totals(live))}<button class="btn block" onclick="this.closest('.scrim').remove()">إغلاق</button>`); };
+  const sp = $("#spdf"); if (sp) sp.onclick = e => { if (!live.length) return toast("كل النتائج ملغية"); downloadPdf(live, e.currentTarget, true); };
+  sr.querySelectorAll("tbody tr").forEach(tr => {
+    const open = () => { const o = R.find(x => String(x.id) === tr.dataset.id);
+      const m = modal(orderCard(o, S.session.role === "branch" ? "branch" : "supplier").replace('<details>','<details open>') + `<button class="btn ghost block" id="mc">إغلاق</button>`);
+      $("#mc", m).onclick = () => m.remove();
+      bindCards(m, [o], S.session.role === "branch" ? "branch" : "supplier");
+      m.querySelectorAll("[data-a]").forEach(b => { if (!["pdf","wa"].includes(b.dataset.a)) b.addEventListener("click", () => setTimeout(() => { m.remove(); runSearch(); }, 700)); });
+    };
+    tr.onclick = open; tr.onkeydown = e => { if (e.key === "Enter") open(); };
+  });
+  if (!RM && window.gsap) gsap.from(sr.querySelectorAll("tbody tr"), {opacity:0, duration:.25, stagger:.01, clearProps:"all"});
+}
+function shortDate(iso){ return new Intl.DateTimeFormat("ar-BH-u-nu-latn",{day:"numeric",month:"short",timeZone:"UTC"}).format(new Date(iso+"T12:00:00Z")); }
+function rangeLabel(){ const F = S.f; return (F.from ? shortDate(F.from) : "البداية") + " إلى " + (F.to ? shortDate(F.to) : "اليوم"); }
 
 /* ---------- admin settings ---------- */
 async function renderSettings(){
   clearInterval(boardTimer);
-  $("#app").innerHTML = header("الإعدادات", [["board","طلبات الفروع"],["settings","الإعدادات"]]) + `<div id="st"><div class="empty">جاري التحميل…</div></div>`;
+  $("#app").innerHTML = header("الإعدادات", tabsFor()) + `<div id="st"><div class="empty">جاري التحميل…</div></div>`;
   try { S.admin = await rpc("veg_admin_get",{p_pin:S.session.pin}); } catch(e){ $("#st").innerHTML = `<div class="empty">${errMsg(e)}</div>`; return; }
   const A = S.admin; A.items = A.items.filter(i=>i.active);
   const unitOpts = u => [...new Set([...UNITS, u])].map(x=>`<option ${x===u?"selected":""}>${esc(x)}</option>`).join("");
@@ -561,6 +788,10 @@ async function renderSettings(){
       <div class="field"><label for="sn">اسم المورد</label><input class="input" id="sn" value="${esc(A.settings.supplier_name)}"></div>
       <div class="field"><label for="sw">رقم واتساب المورد (مع رمز الدولة، بدون +)</label><input class="input num" id="sw" dir="ltr" inputmode="numeric" placeholder="9733XXXXXXX" value="${esc(A.settings.supplier_whatsapp)}"></div>
       <div class="field"><label for="sp">الرقم السري للمورد</label><input class="input num" id="sp" inputmode="numeric" value="${esc(A.settings.supplier_pin)}"></div></section>
+    <section class="section"><h2>استرجاع الرقم السري</h2>
+      <div class="field"><label for="aw">رقم واتساب الإدارة (يتواصل عليه اللي ينسى رقمه)</label><input class="input num" id="aw" dir="ltr" inputmode="numeric" placeholder="9733XXXXXXX" value="${esc(A.settings.admin_whatsapp||"")}"></div>
+      <p class="faint" style="margin:0">إذا نسيت رقم الإدارة، تدخل من «نسيت الرقم السري؟» برمز الاسترجاع. احفظ الرمز في مكان آمن خارج التطبيق.</p>
+      <div><button class="btn" id="newrec">إنشاء رمز استرجاع جديد</button></div><div id="recout"></div></section>
     <section class="section"><h2>أرقام الفروع السرية</h2>
       <div class="pins">${A.pins.map(p=>`<div class="field"><label for="p_${p.branch_id}">${esc(bn(p.name))}</label><input class="input num" id="p_${p.branch_id}" data-b="${p.branch_id}" inputmode="numeric" value="${esc(p.pin||"")}"></div>`).join("")}</div></section>
     <section class="section"><h2>رقم الإدارة السري</h2>
@@ -573,6 +804,12 @@ async function renderSettings(){
     });
     $("#add").onclick = () => { A.items.push({name:"", name_en:"", unit:"كيلو", category:"خضار"}); draw(); const l = [...document.querySelectorAll('#eds [data-f="name"]')].pop(); l && l.focus(); };
     $("#save").onclick = saveSettings;
+    $("#newrec").onclick = async e => { const b = e.currentTarget;
+      if (b.dataset.sure !== "1"){ b.dataset.sure = "1"; b.textContent = "الرمز القديم يتوقف. اضغط للتأكيد"; b.classList.add("primary"); return; }
+      b.setAttribute("aria-busy","true");
+      try { const c = await rpc("veg_admin_new_recovery",{p_pin:S.session.pin});
+        $("#recout").innerHTML = `<div class="code">${esc(c)}</div><p class="faint" style="margin:6px 0 0">انسخ الرمز الحين. ما يظهر مرة ثانية.</p>`;
+        b.remove(); } catch(err){ toast(errMsg(err)); b.removeAttribute("aria-busy"); } };
   };
   draw();
 }
@@ -582,7 +819,7 @@ async function saveSettings(){
   const pins = [...document.querySelectorAll("[data-b]")].map(x => ({branch_id:x.dataset.b, pin:x.value.trim()}));
   if (pins.some(p => p.pin && p.pin.length < 4)) return $("#sm").textContent = "الرقم السري لازم يكون 4 أرقام على الأقل.";
   const newAdmin = $("#ap").value.trim(); if (newAdmin && newAdmin.length < 6) return $("#sm").textContent = "رقم الإدارة لازم يكون 6 أرقام على الأقل.";
-  const settings = {supplier_name:$("#sn").value.trim()||"المورد", supplier_whatsapp:$("#sw").value.replace(/\D/g,""), supplier_pin:$("#sp").value.trim(), admin_pin:newAdmin};
+  const settings = {supplier_name:$("#sn").value.trim()||"المورد", supplier_whatsapp:$("#sw").value.replace(/\D/g,""), supplier_pin:$("#sp").value.trim(), admin_pin:newAdmin, admin_whatsapp:$("#aw").value.replace(/\D/g,"")};
   b.setAttribute("aria-busy","true");
   try {
     S.admin = await rpc("veg_admin_save",{p_pin:S.session.pin,p_items:items,p_settings:settings,p_pins:pins});
@@ -603,6 +840,7 @@ function pdfPage(o, i, n){
     ${o.items.map((l,ix)=>`<tr><td class="c">${ix+1}</td><td>${esc(l.name)}</td><td class="en">${esc(l.name_en||"")}</td><td class="u">${esc(l.unit)}</td><td class="q">${fmtQty(l.qty)}</td><td class="k"></td></tr>`).join("")}
     </tbody></table>
     ${o.note?`<div class="note"><b>ملاحظة:</b> ${esc(o.note)}</div>`:""}
+    ${o.received_at?`<div class="rcv">✓ استلمه المورد: <b>${esc(stampLabel(o.received_at))}</b>${o.delivered_at?` &nbsp;·&nbsp; ✓ تم التوصيل: <b>${esc(stampLabel(o.delivered_at))}</b>`:""}</div>`:""}
     <div class="sig"><div>توقيع المورد</div><div>توقيع مستلم الفرع</div></div>
     <div class="foot"><span>عدد الأصناف: ${o.items.length}</span><span>${n>1?`صفحة ${i+1} من ${n}`:"فريج بن عاقول"}</span></div></div>`;
 }
@@ -633,6 +871,7 @@ function pdfName(list, combined){
   return combined ? `خضرة-كل-الفروع-${d}.pdf` : `طلب-خضرة-${bn(list[0].branch_name)}-${pad(list[0].id)}.pdf`;
 }
 async function downloadPdf(list, btn, combined=false){
+  if (window.VEG_DEMO) return showPdfPreview(list, combined);
   const t = btn && btn.textContent; if (btn){ btn.setAttribute("aria-busy","true"); btn.textContent = "جاري تجهيز PDF…"; }
   try {
     const blob = await makePdf(list, combined);
@@ -647,6 +886,7 @@ function waText(o){
     o.items.map(l => `• ${l.name}${l.name_en?` (${l.name_en})`:""}: ${fmtQty(l.qty)} ${l.unit}`).join("\n") + (o.note ? `\n\nملاحظة: ${o.note}` : "");
 }
 async function sendWhatsApp(list, btn){
+  if (window.VEG_DEMO) return showPdfPreview(list, false, true);
   const o = list[0], sup = S.boot.supplier || {};
   const t = btn && btn.textContent; if (btn){ btn.setAttribute("aria-busy","true"); btn.textContent = "جاري تجهيز PDF…"; }
   try {
@@ -663,6 +903,25 @@ async function sendWhatsApp(list, btn){
     }
   } catch(e){ toast("ما قدرنا نجهّز الملف. حاول مرة ثانية."); }
   if (btn){ btn.removeAttribute("aria-busy"); btn.textContent = t; }
+}
+
+function showPdfPreview(list, combined, wa){
+  const n = list.length + (combined ? 1 : 0);
+  const pages = (combined ? summaryPage(list, n) : "") + list.map((o,i) => pdfPage(o, i + (combined?1:0), n)).join("");
+  const m = modal(`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2>معاينة أمر الشراء</h2><button class="btn sm" id="pc">إغلاق</button></div>
+    <p class="faint" style="margin:0">${wa ? "في التطبيق الفعلي ينفتح الواتساب ومعه هذا الملف ونص الطلب." : "في التطبيق الفعلي ينزل هذا الملف PDF."}</p>
+    <div id="pv" style="display:flex;flex-direction:column;gap:12px;align-items:center"></div>
+    ${wa ? `<div class="card" style="white-space:pre-wrap;font-size:13px"><span class="faint">نص الرسالة</span>
+${esc(waText(list[0]))}</div>` : ""}`);
+  $("#pc", m).onclick = () => m.remove();
+  const pv = $("#pv", m), w = Math.min(pv.clientWidth || 560, 600), sc = w / 794;
+  const tmp = document.createElement("div"); tmp.innerHTML = pages;
+  [...tmp.children].forEach(pg => {
+    pg.style.pageBreakAfter = ""; const box = document.createElement("div");
+    box.style.cssText = `width:${w}px;height:${Math.round(1123*sc)}px;overflow:hidden;border:1px solid var(--line);flex:none;position:relative;background:#fff`;
+    pg.style.cssText += `;position:absolute;top:0;left:0;transform:scale(${sc});transform-origin:0 0;min-height:1123px;height:1123px`;
+    box.appendChild(pg); pv.appendChild(box);
+  });
 }
 
 /* ---------- smooth scroll ---------- */
