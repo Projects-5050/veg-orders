@@ -95,13 +95,13 @@ textarea.input{height:auto;min-height:70px;padding:10px 12px;resize:vertical}
 .search input{padding-inline-start:38px}
 .search svg{position:absolute;inset-inline-start:12px;top:14px;width:18px;height:18px;color:var(--ink-3)}
 .cat{font-family:var(--display);font-weight:700;font-size:13px;color:var(--red);padding:18px 0 0}
-.row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 84px auto;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 96px auto;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .row:nth-child(even of .row){background:var(--sheet)}
-.rh{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 84px 136px;gap:12px;padding:10px 12px;background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;margin-top:8px}
+.rh{display:grid;grid-template-columns:minmax(0,1fr) 96px 136px;gap:12px;padding:10px 12px;background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;margin-top:8px}
 .rh .q{text-align:center}
 .row .ar{direction:rtl;text-align:right;font-family:"IBM Plex Sans Arabic",sans-serif;color:var(--ink-2);font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .row .ut{font-size:14px;color:var(--ink-2)}
-@media (max-width:560px){.row,.rh{grid-template-columns:minmax(0,1fr) 64px auto;gap:8px;padding-inline:8px}.rh{grid-template-columns:minmax(0,1fr) 64px 128px}.row .ar,.rh .ar{display:none}.row .nm-ar{display:block}}
+@media (max-width:560px){.row,.rh{grid-template-columns:minmax(0,1fr) 64px auto;gap:8px;padding-inline:8px}.rh{grid-template-columns:minmax(0,1fr) 64px 128px}}
 .nm-ar{display:none;direction:rtl;text-align:left;font-size:12px;color:var(--ink-3);font-family:"IBM Plex Sans Arabic",sans-serif}
 .row.on .nm{font-weight:700}
 .row.on,.row.on:nth-child(even of .row){background:var(--red-soft)}
@@ -153,10 +153,10 @@ table.t td.q{text-align:end;font-weight:600;font-variant-numeric:tabular-nums;wh
 .dnav{display:flex;align-items:center;gap:6px}
 .section{padding-block:18px;display:flex;flex-direction:column;gap:12px}
 .section+.section{border-top:1.5px solid var(--line)}
-.ed{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 92px 92px 40px;gap:6px;align-items:center}
+.ed{display:grid;grid-template-columns:minmax(0,1fr) 110px 130px 40px;gap:6px;align-items:center}
 .ed .input{height:40px;padding:0 8px}
 .ed button{height:40px}
-@media (max-width:560px){.ed{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px}.ed select{grid-row:2}.ed .catsel{display:none}.ed{padding-bottom:8px;border-bottom:1px solid var(--line)}}
+@media (max-width:560px){.ed{grid-template-columns:minmax(0,1fr) 96px 40px}.ed .catsel{display:none}.ed{padding-bottom:8px;border-bottom:1px solid var(--line)}}
 .pins{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-block:18px}
 .filters .fx{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -433,7 +433,7 @@ function renderOrder(){
       <button class="iconbtn" aria-label="Next day" onclick="setDelivery(1)">${ICON.right}</button>
       <button class="btn sm ghost" onclick="repeatLast()">Repeat last order</button></div>
     </div>
-    <div class="search">${ICON.search}<input class="input" id="sq" type="search" placeholder="Search: TOMATO, طماط…" value="${esc(S.q)}" aria-label="Search"></div>
+    <div class="search">${ICON.search}<input class="input" id="sq" type="search" placeholder="Search: TOMATO…" value="${esc(S.q)}" aria-label="Search"></div>
     <div class="chips" role="group" aria-label="Categories">${cats.map(c=>`<button class="chip" aria-pressed="${S.cat===c}" data-c="${esc(c)}">${c===ALL?"All":esc(ce(c))}</button>`).join("")}</div>
     <div id="rows"></div>
     <div class="field" style="margin-top:18px"><label for="note">Note for the supplier (optional)</label><textarea class="input" id="note" placeholder="e.g. Tomatoes should be red and ripe">${esc(S.note)}</textarea></div>
@@ -453,12 +453,12 @@ function setDelivery(n){
 function drawRows(first){
   const items = S.boot.items.filter(i => (S.cat===ALL || i.category===S.cat) && (!S.q || i.name.includes(S.q) || (i.name_en||"").toLowerCase().includes(S.q.toLowerCase())));
   let html = "", lastCat = null;
-  const RH = `<div class="rh" aria-hidden="true"><span>Item</span><span class="ar" style="text-align:right">Arabic</span><span>Unit</span><span class="q">Qty</span></div>`;
+  const RH = `<div class="rh" aria-hidden="true"><span>Item</span><span>Unit</span><span class="q">Qty</span></div>`;
   for (const i of items){
     if (S.cat===ALL && !S.q && i.category !== lastCat){ html += `<div class="cat">${esc(ce(i.category))}</div>${RH}`; lastCat = i.category; }
     else if (!html) html += RH;
     const q = S.qty[i.id] || 0;
-    html += `<div class="row ${q>0?"on":""}" data-id="${i.id}"><div><div class="nm">${esc(iname(i))}</div>${i.name_en?`<div class="nm-ar">${esc(i.name)}</div>`:""}</div><div class="ar">${i.name_en?esc(i.name):""}</div><div class="ut">${esc(ue(i.unit))}</div>
+    html += `<div class="row ${q>0?"on":""}" data-id="${i.id}"><div><div class="nm">${esc(iname(i))}</div></div><div class="ut">${esc(ue(i.unit))}</div>
       <div class="step"><button class="minus" aria-label="Decrease ${esc(iname(i))}">−</button>
       <input inputmode="decimal" class="num" aria-label="Quantity of ${esc(iname(i))}" value="${q?fmtQty(q):""}" placeholder="0">
       <button class="plus" aria-label="Increase ${esc(iname(i))}">+</button></div></div>`;
@@ -495,7 +495,7 @@ function modal(html){
 }
 function linesTable(lines){
   return `<div class="tw"><table class="t"><thead><tr><th>Item</th><th>Unit</th><th style="text-align:end">Qty</th></tr></thead><tbody>
-  ${lines.map(l=>`<tr><td>${esc(l.name_en||l.name)}${l.name_en?`<div class="faint" dir="rtl" style="text-align:left">${esc(l.name)}</div>`:""}</td><td class="muted">${esc(ue(l.unit))}</td><td class="q">${fmtQty(l.qty)}</td></tr>`).join("")}</tbody></table></div>`;
+  ${lines.map(l=>`<tr><td>${esc(l.name_en||l.name)}</td><td class="muted">${esc(ue(l.unit))}</td><td class="q">${fmtQty(l.qty)}</td></tr>`).join("")}</tbody></table></div>`;
 }
 function openReview(){
   const lines = selectedLines();
@@ -793,13 +793,13 @@ async function renderSettings(){
   const A = S.admin; A.items = A.items.filter(i=>i.active);
   const unitOpts = u => [...new Set([...UNITS, u])].map(x=>`<option value="${esc(x)}" ${x===u?"selected":""}>${esc(ue(x))}</option>`).join("");
   const catOpts = c => [...new Set([...CATS, c])].map(x=>`<option value="${esc(x)}" ${x===c?"selected":""}>${esc(ce(x))}</option>`).join("");
-  const itemRow = (i, ix) => `<div class="ed" data-ix="${ix}"><input class="input en" dir="ltr" aria-label="English name" placeholder="ENGLISH NAME" value="${esc(i.name_en||"")}" data-f="name_en"><input class="input" dir="rtl" aria-label="Arabic name" placeholder="الاسم بالعربي" value="${esc(i.name)}" data-f="name">
+  const itemRow = (i, ix) => `<div class="ed" data-ix="${ix}"><input class="input en" dir="ltr" aria-label="English name" placeholder="ENGLISH NAME" value="${esc(i.name_en||"")}" data-f="name_en">
     <select class="input" aria-label="Unit" data-f="unit">${unitOpts(i.unit)}</select>
     <select class="input catsel" aria-label="Category" data-f="category">${catOpts(i.category)}</select>
     <button class="iconbtn" aria-label="Delete ${esc(iname(i))}" data-del>×</button></div>`;
   const draw = () => {
     $("#st").innerHTML = `
-    <section class="section"><h2>Items</h2><p class="faint" style="margin:0">The order here is the same order used on the order screen and in the PDF. Both names are required: English is shown in the app, Arabic is kept for the records.</p>
+    <section class="section"><h2>Items</h2><p class="faint" style="margin:0">The order here is the same order used on the order screen and in the PDF. </p>
       <div style="display:flex;flex-direction:column;gap:6px" id="eds">${A.items.map(itemRow).join("")}</div>
       <button class="btn ghost" id="add">+ Add item</button></section>
     <section class="section"><h2>Supplier</h2>
@@ -820,7 +820,7 @@ async function renderSettings(){
       r.querySelectorAll("[data-f]").forEach(f => f.oninput = () => i[f.dataset.f] = f.value);
       $("[data-del]", r).onclick = () => { A.items.splice(r.dataset.ix, 1); draw(); };
     });
-    $("#add").onclick = () => { A.items.push({name:"", name_en:"", unit:"كيلو", category:"خضار"}); draw(); const l = [...document.querySelectorAll('#eds [data-f="name"]')].pop(); l && l.focus(); };
+    $("#add").onclick = () => { A.items.push({name:"", name_en:"", unit:"كيلو", category:"خضار"}); draw(); const l = [...document.querySelectorAll('#eds [data-f="name_en"]')].pop(); l && l.focus(); };
     $("#save").onclick = saveSettings;
     $("#newrec").onclick = async e => { const b = e.currentTarget;
       if (b.dataset.sure !== "1"){ b.dataset.sure = "1"; b.textContent = "The old code will stop working. Tap to confirm"; b.classList.add("primary"); return; }
@@ -833,7 +833,7 @@ async function renderSettings(){
 }
 async function saveSettings(){
   const A = S.admin, b = $("#save");
-  const items = A.items.filter(i => i.name.trim()).map((i,ix) => ({id:i.id||null, name:i.name.trim(), name_en:(i.name_en||"").trim().toUpperCase(), unit:i.unit, category:i.category||"خضار", sort:(ix+1)*10}));
+  const items = A.items.filter(i => (i.name_en||i.name||"").trim()).map((i,ix) => ({id:i.id||null, name:(i.name||i.name_en).trim(), name_en:(i.name_en||"").trim().toUpperCase(), unit:i.unit, category:i.category||"خضار", sort:(ix+1)*10}));
   const pins = [...document.querySelectorAll("[data-b]")].map(x => ({branch_id:x.dataset.b, pin:x.value.trim()}));
   if (pins.some(p => p.pin && p.pin.length < 4)) return $("#sm").textContent = "PINs must be at least 4 digits.";
   const newAdmin = $("#ap").value.trim(); if (newAdmin && newAdmin.length < 6) return $("#sm").textContent = "The admin PIN must be at least 6 digits.";
@@ -854,8 +854,8 @@ function pdfPage(o, i, n){
     <div class="ph"><div class="l"><div class="bar5"></div><img class="plogo" src="${LOGO}" alt="Fareeq Bin Aqool"><span>Vegetable purchase order · ${esc(sup)}</span></div>
       <div class="po"><b>PURCHASE ORDER</b><span>#${pad(o.id)}</span></div></div>
     <div class="meta"><div><span>Branch</span><b>${esc(bn(o.branch_name))}</b></div><div><span>Delivery date</span><b>${esc(dl.s)}</b></div><div><span>Order date</span><b>${esc(timeLabel(o.created_at))}</b></div></div>
-    <table><thead><tr><th style="text-align:center">#</th><th>Item</th><th style="text-align:right">Arabic</th><th>Unit</th><th style="text-align:center">Qty</th><th>Received</th></tr></thead><tbody>
-    ${o.items.map((l,ix)=>`<tr><td class="c">${ix+1}</td><td class="en">${esc(l.name_en||l.name)}</td><td class="ar">${esc(l.name)}</td><td class="u">${esc(ue(l.unit))}</td><td class="q">${fmtQty(l.qty)}</td><td class="k"></td></tr>`).join("")}
+    <table><thead><tr><th style="text-align:center">#</th><th>Item</th><th>Unit</th><th style="text-align:center">Qty</th><th>Received</th></tr></thead><tbody>
+    ${o.items.map((l,ix)=>`<tr><td class="c">${ix+1}</td><td class="en">${esc(l.name_en||l.name)}</td><td class="u">${esc(ue(l.unit))}</td><td class="q">${fmtQty(l.qty)}</td><td class="k"></td></tr>`).join("")}
     </tbody></table>
     ${o.note?`<div class="note"><b>Note:</b> ${esc(o.note)}</div>`:""}
     ${o.received_at?`<div class="rcv">✓ Received by supplier: <b>${esc(stampLabel(o.received_at))}</b>${o.delivered_at?` &nbsp;·&nbsp; ✓ Delivered: <b>${esc(stampLabel(o.delivered_at))}</b>`:""}</div>`:""}
@@ -868,8 +868,8 @@ function summaryPage(list, n){
     <div class="ph"><div class="l"><div class="bar5"></div><img class="plogo" src="${LOGO}" alt="Fareeq Bin Aqool"><span>Vegetable orders summary, all branches</span></div>
       <div class="po"><b>SUMMARY</b><span>${list.length} ${list.length===1?"order":"orders"}</span></div></div>
     <div class="meta"><div><span>Delivery date</span><b>${esc(dl.s)}</b></div><div><span>Branches</span><b>${new Set(list.map(o=>o.branch_id)).size}</b></div><div><span>Items</span><b>${t.length}</b></div></div>
-    <table><thead><tr><th style="text-align:center">#</th><th>Item</th><th style="text-align:right">Arabic</th><th>Unit</th><th style="text-align:center">Total</th></tr></thead><tbody>
-    ${t.map((l,ix)=>`<tr><td class="c">${ix+1}</td><td class="en">${esc(l.name_en||l.name)}</td><td class="ar">${esc(l.name)}</td><td class="u">${esc(ue(l.unit))}</td><td class="q">${fmtQty(l.qty)}</td></tr>`).join("")}</tbody></table>
+    <table><thead><tr><th style="text-align:center">#</th><th>Item</th><th>Unit</th><th style="text-align:center">Total</th></tr></thead><tbody>
+    ${t.map((l,ix)=>`<tr><td class="c">${ix+1}</td><td class="en">${esc(l.name_en||l.name)}</td><td class="u">${esc(ue(l.unit))}</td><td class="q">${fmtQty(l.qty)}</td></tr>`).join("")}</tbody></table>
     <div class="foot"><span>${list.map(o=>bn(o.branch_name)).join(" · ")}</span><span>Page 1 of ${n}</span></div></div>`;
 }
 async function makePdf(list, combined){
@@ -901,7 +901,7 @@ async function downloadPdf(list, btn, combined=false){
 function waText(o){
   const dl = dayLabel(o.delivery_date);
   return `Vegetable order · ${bn(o.branch_name)} branch\nOrder no.: #${pad(o.id)}\nDelivery: ${dl.s}\n\n` +
-    o.items.map(l => `• ${l.name_en||l.name}${l.name_en?` (${l.name})`:""}: ${fmtQty(l.qty)} ${ue(l.unit)}`).join("\n") + (o.note ? `\n\nNote: ${o.note}` : "");
+    o.items.map(l => `• ${l.name_en||l.name}: ${fmtQty(l.qty)} ${ue(l.unit)}`).join("\n") + (o.note ? `\n\nNote: ${o.note}` : "");
 }
 async function sendWhatsApp(list, btn){
   if (window.VEG_DEMO) return showPdfPreview(list, false, true);
