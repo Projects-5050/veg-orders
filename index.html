@@ -27,6 +27,7 @@
   --line:#2C2A28; --line-strong:#F3F1EE; --red:#E5354F; --red-ink:#FFFFFF; --red-soft:#3A1A20;
   --ok:#5BC489; --ok-soft:#173023; --warn:#E5B04F; --warn-soft:#33270F; color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.6 var(--body);
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
@@ -52,6 +53,7 @@ h3{font-size:16px;font-weight:700}
 .btn.ghost{border-color:var(--line)}
 .btn.sm{min-height:34px;padding:0 12px;font-size:13px}
 .btn.block{width:100%}
+.btn svg{width:17px;height:17px;flex:none}
 .btn[aria-busy="true"]{opacity:.6;pointer-events:none}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-size:13px;font-weight:600;color:var(--ink-2)}
@@ -141,6 +143,8 @@ table.t td.q{text-align:end;font-weight:600;font-variant-numeric:tabular-nums;wh
 .pill.received{background:var(--warn-soft);color:var(--warn)}
 .pill.delivered{background:var(--ok-soft);color:var(--ok)}
 .pill.cancelled{background:var(--sheet);color:var(--ink-3)}
+.pill.archived{background:var(--sheet);color:var(--ink-2)}
+.pill.archived::before{border-radius:1px}
 .acts{display:flex;gap:8px;flex-wrap:wrap}
 .list{display:flex;flex-direction:column;gap:10px;padding-block:12px}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1.5px solid var(--line-strong);border-radius:var(--r);margin-block:4px 14px}
@@ -222,6 +226,28 @@ table.rt td{white-space:nowrap}
 .pp .sig div{border-top:1.5px solid #141414;padding-top:6px}
 .pp .foot{position:absolute;bottom:28px;right:52px;left:52px;display:flex;justify-content:space-between;font-size:11px;color:#8E8A85;border-top:1px solid #E6E3DF;padding-top:8px}
 .pp .bar5{height:6px;background:#C8102E;width:72px;margin-bottom:10px}
+.archbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.seg2{display:inline-grid;grid-template-columns:repeat(2,auto)}
+.seg2 button{padding:9px 16px}
+.aday{padding-block:14px 6px}
+.at{table-layout:fixed;min-width:640px}
+.adh{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.adh h3{font-family:var(--display)}
+.adh .btn{margin-inline-start:auto}
+.pv{border:1.5px solid var(--line-strong);border-radius:var(--r)}
+.pv table.t th,.pv table.t td{padding:8px 10px;white-space:nowrap}
+.pv table.t thead th{background:var(--ink);color:var(--paper);border-bottom:0}
+.pv .n{text-align:end}
+.pv .tot{font-weight:700;background:var(--red-soft)}
+.pv thead .tot{background:var(--red);color:var(--red-ink)}
+.pv .stk{position:sticky;left:0;background:var(--paper);z-index:1;font-weight:600}
+.pv thead .stk{background:var(--ink)}
+.pv tbody tr:nth-child(even) td{background:var(--sheet)}
+.pv tbody tr:nth-child(even) td.tot{background:var(--red-soft)}
+.pv tfoot td{border-top:2px solid var(--line-strong);border-bottom:0;font-weight:700}
+.iconbtn:disabled{opacity:.35;cursor:default}
+.dnav select.input{padding:0 10px}
+::selection{background:var(--red);color:var(--red-ink)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -272,7 +298,7 @@ function stampLabel(ts){
   const d = new Date(ts), z = {timeZone:"Asia/Bahrain"};
   return new Intl.DateTimeFormat("en-GB",{...z,hour:"numeric",minute:"2-digit",hour12:true}).format(d) + " · " + new Intl.DateTimeFormat("en-GB",{...z,day:"numeric",month:"long"}).format(d);
 }
-const LOGNAME = {received:"Received by supplier", delivered:"Delivered", undo:"Receipt undone", cancelled:"Cancelled by branch"};
+const LOGNAME = {received:"Received by supplier", delivered:"Delivered", undo:"Receipt undone", cancelled:"Cancelled by branch", archived:"Archived", unarchived:"Moved back to board"};
 const ROLENAME = {supplier:"Supplier", admin:"Admin", branch:"Branch"};
 function unitTotals(items){
   const m = {}; items.forEach(l => m[l.unit] = (m[l.unit]||0) + Number(l.qty));
@@ -318,6 +344,8 @@ const ICON = {
   right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
   left:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>',
   key:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 8.2-8.2m-3 3 2 2m-4.5-.5 2 2"/></svg>',
+  box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/></svg>',
+  sheet:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13l4 4m0-4-4 4"/></svg>',
   refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>'
 };
 
@@ -325,7 +353,8 @@ const ICON = {
 const S = {
   boot:null, session: ls.get("veg.session"), view:"order",
   qty:{}, note:"", delivery: bhDate(1), cat:ALL, q:"",
-  history:[], date: bhDate(1), orders:[], admin:null
+  history:[], date: bhDate(1), orders:[], admin:null,
+  arch:{month: bhDate(0).slice(0,7), branch:"", mode:"orders", data:null, key:""}
 };
 
 function animateIn(sel){
@@ -351,10 +380,11 @@ async function boot(){
 function route(){
   if (!S.session) return renderLogin();
   if (S.view === "search" && S.session.role === "admin") { clearInterval(boardTimer); return renderSearch(); }
+  if (S.view === "archive" && S.session.role !== "branch") { clearInterval(boardTimer); return renderArchive(); }
   if (S.view === "search") S.view = S.session.role === "branch" ? "order" : "board";
   if (S.session.role === "branch") return S.view === "history" ? renderHistory() : renderOrder();
   if (S.session.role === "admin" && S.view === "settings") return renderSettings();
-  return renderSupplier();
+  S.view = "board"; return renderSupplier();
 }
 function logout(){ S.session = null; ls.del("veg.session"); S.view = "order"; S.qty = {}; S.note=""; route(); }
 
@@ -416,8 +446,8 @@ function header(sub, tabs){
 function tabsFor(){
   const r = S.session.role;
   if (r === "branch") return [["order","New order"],["history","My orders"]];
-  if (r === "admin") return [["board","Branch orders"],["search","Search"],["settings","Settings"]];
-  return null;
+  if (r === "admin") return [["board","Branch orders"],["archive","Archive"],["search","Search"],["settings","Settings"]];
+  return [["board","Orders"],["archive","Archive"]];
 }
 function saveDraft(){ if (S.session && S.session.branch) ls.set("veg.draft." + S.session.branch, {qty:S.qty, note:S.note}); }
 function selectedLines(){
@@ -550,10 +580,11 @@ function orderCard(o, mode){
     if (mode === "branch"){ acts += `<button class="btn sm" data-a="wa">WhatsApp</button>`; if (o.status === "new") acts += `<button class="btn sm ghost" data-a="cancel">Cancel</button>`; }
     else { if (o.status === "new") acts += `<button class="btn sm primary" data-a="received">Mark received</button>`;
            if (o.status === "received") acts += `<button class="btn sm dark" data-a="delivered">Mark delivered</button>`;
-           if (o.status !== "new") acts += `<button class="btn sm ghost" data-a="new">Undo receipt</button>`; }
+           if (o.status !== "new" && !o.archived_at) acts += `<button class="btn sm ghost" data-a="new">Undo receipt</button>`;
+           if (o.status !== "new") acts += o.archived_at ? `<button class="btn sm" data-a="unarchive">Move back to board</button>` : `<button class="btn sm" data-a="archive">Archive</button>`; }
   }
   return `<article class="card ${o.status==="new"?"new":""}" data-id="${o.id}">
-    <div class="h"><div><h3>${head}</h3><div class="faint">${sub} · ${o.items.length} ${o.items.length===1?"item":"items"}</div></div><span class="pill ${o.status}">${STATUS[o.status]}</span></div>
+    <div class="h"><div><h3>${head}</h3><div class="faint">${sub} · ${o.items.length} ${o.items.length===1?"item":"items"}</div></div><span style="display:flex;gap:6px;flex-wrap:wrap">${o.archived_at?`<span class="pill archived">Archived</span>`:""}<span class="pill ${o.status}">${STATUS[o.status]}</span></span></div>
     ${o.status!=="cancelled"?`<details${mode!=="branch"?" open":""}><summary class="faint" style="cursor:pointer">Items</summary>${linesTable(o.items)}</details>`:""}
     ${o.note?`<div class="faint">Note: <span style="color:var(--ink)">${esc(o.note)}</span></div>`:""}
     ${stampsHtml(o)}
@@ -571,6 +602,15 @@ function bindCards(root, list, mode, onDone){
         if (b.dataset.sure !== "1"){ b.dataset.sure = "1"; b.textContent = "Sure? Tap to cancel"; b.classList.add("primary"); return; }
         try { await rpc("veg_cancel_order",{p_branch:S.session.branch,p_pin:S.session.pin,p_id:o.id}); toast("Order cancelled"); renderHistory(); }
         catch(e){ toast(errMsg(e)); }
+        return;
+      }
+      if (a === "archive" || a === "unarchive"){
+        b.setAttribute("aria-busy","true");
+        try { await rpc("veg_set_archived",{p_pin:S.session.pin,p_ids:[o.id],p_archived:a==="archive"});
+          o.archived_at = a==="archive" ? new Date().toISOString() : null;
+          toast(a==="archive" ? `Order #${pad(o.id)} archived` : `Order #${pad(o.id)} is back on the board`);
+          if (onDone) onDone(o); else loadBoard(true); }
+        catch(e){ toast(errMsg(e)); b.removeAttribute("aria-busy"); }
         return;
       }
       if (a === "new" && b.dataset.sure !== "1"){ b.dataset.sure = "1"; b.textContent = "Sure? Tap to undo"; b.classList.add("primary"); return; }
@@ -598,12 +638,13 @@ function renderSupplier(){
     <div class="stats"><div><b class="num" id="s1">–</b><span>of ${S.boot.branches.length} branches ordered</span></div><div><b class="num" id="s2">–</b><span>Awaiting receipt</span></div><div><b class="num" id="s3">–</b><span>Received</span></div></div>
     <div id="miss"></div>
     <div class="acts" style="margin-top:12px"><button class="btn primary" id="allpdf">Combined PDF, all branches</button><button class="btn" id="tot">Quantity totals</button>${isAdmin?`<button class="btn dark" onclick="S.view='search';route()">Search orders</button>`:""}</div>
+    <div class="acts" id="arch" style="margin-top:8px;align-items:center"></div>
     <div class="list" id="bl"><div class="empty">Loading…</div></div>`;
   $("#allpdf").onclick = e => { const l = S.orders.filter(o=>o.status!=="cancelled"); if (!l.length) return toast("No orders for this day"); downloadPdf(l, e.currentTarget, true); };
   $("#tot").onclick = () => { const l = S.orders.filter(o=>o.status!=="cancelled"); if (!l.length) return toast("No orders for this day");
     modal(`<h2>Quantity totals</h2><div class="muted">${l.length} ${l.length===1?"order":"orders"} · ${esc(dl.s)}</div>${linesTable(totals(l))}<button class="btn block" onclick="this.closest('.scrim').remove()">Close</button>`); };
   loadBoard(false);
-  clearInterval(boardTimer); boardTimer = setInterval(() => { if (S.session && S.session.role !== "branch" && S.view !== "settings" && !document.hidden) loadBoard(true); }, 60000);
+  clearInterval(boardTimer); boardTimer = setInterval(() => { if (S.session && S.session.role !== "branch" && S.view === "board" && !document.hidden) loadBoard(true); }, 60000);
 }
 function totals(list){
   const m = new Map();
@@ -615,12 +656,22 @@ async function loadBoard(quiet){
   const bl = $("#bl"); if (!bl) return;
   try { S.orders = await rpc("veg_orders_for_date",{p_pin:S.session.pin,p_date:S.date}); }
   catch(e){ bl.innerHTML = `<div class="empty">${errMsg(e)}</div>`; return; }
-  const live = S.orders.filter(o=>o.status!=="cancelled");
-  const ids = new Set(live.map(o=>o.branch_id));
-  $("#s1").textContent = ids.size; $("#s2").textContent = live.filter(o=>o.status==="new").length; $("#s3").textContent = live.filter(o=>o.status!=="new").length;
+  const all = S.orders.filter(o=>o.status!=="cancelled");
+  const live = all.filter(o=>!o.archived_at), archived = all.filter(o=>o.archived_at);
+  const ids = new Set(all.map(o=>o.branch_id));
+  $("#s1").textContent = ids.size; $("#s2").textContent = all.filter(o=>o.status==="new").length; $("#s3").textContent = all.filter(o=>o.status!=="new").length;
+  const done = live.filter(o=>o.status!=="new");
+  $("#arch").innerHTML = (done.length ? `<button class="btn" id="archall">${ICON.box}Archive received (${done.length})</button>` : "")
+    + (archived.length ? `<button class="linkbtn" onclick="S.arch.month=S.date.slice(0,7);S.view='archive';route()">${archived.length} archived for this day · view in Archive</button>` : "");
+  const ab = $("#archall"); if (ab) ab.onclick = async () => {
+    if (ab.dataset.sure !== "1"){ ab.dataset.sure = "1"; ab.innerHTML = `${ICON.box}Sure? Tap to archive ${done.length}`; ab.classList.add("primary"); return; }
+    ab.setAttribute("aria-busy","true");
+    try { const r = await rpc("veg_set_archived",{p_pin:S.session.pin,p_ids:done.map(o=>o.id),p_archived:true}); toast(`${r.count} ${r.count===1?"order":"orders"} archived`); loadBoard(true); }
+    catch(e){ toast(errMsg(e)); ab.removeAttribute("aria-busy"); } };
   const missing = S.boot.branches.filter(b => !ids.has(b.id));
   $("#miss").innerHTML = missing.length && live.length ? `<div class="faint" style="margin-bottom:6px">Not ordered yet:</div><div class="missing">${missing.map(b=>`<span>${esc(bn(b.name))}</span>`).join("")}</div>` : "";
   $("#miss").innerHTML = "";
+  if (!live.length && archived.length){ bl.innerHTML = `<div class="empty"><h3>All orders for this day are archived</h3><p>Open the Archive tab to see them, export them, or bring one back.</p></div>`; return; }
   if (!live.length){ bl.innerHTML = `<div class="empty"><h3>No orders for this day</h3><p>When a branch manager sends an order it shows here right away. This page refreshes every minute.</p></div>`; return; }
   const tile = o => {
     const st = o.status;
@@ -648,6 +699,123 @@ async function loadBoard(quiet){
     t.onclick = open; t.onkeydown = e => { if (e.key === "Enter" && e.target === t) open(); };
   });
   if (!quiet) animateIn("#bl .tile");
+}
+
+/* ---------- archive, monthly summary & Excel ---------- */
+function monthRange(m){ const [y,mo] = m.split("-").map(Number); const last = new Date(Date.UTC(y, mo, 0)).getUTCDate(); return {from:`${m}-01`, to:`${m}-${String(last).padStart(2,"0")}`}; }
+function monthLabel(m){ return new Intl.DateTimeFormat("en-GB",{month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(m+"-15T12:00:00Z")); }
+function shiftMonth(m, n){ const [y,mo] = m.split("-").map(Number); const d = new Date(Date.UTC(y, mo-1+n, 1)); return d.toISOString().slice(0,7); }
+async function loadArchive(force){
+  const A = S.arch, key = A.month + "|" + A.branch;
+  if (!force && A.data && A.key === key) return A.data;
+  const r = monthRange(A.month);
+  A.data = await rpc("veg_orders_range",{p_pin:S.session.pin,p_from:r.from,p_to:r.to,p_branch:A.branch||null}); A.key = key;
+  return A.data;
+}
+function renderArchive(){
+  const A = S.arch, cur = bhDate(0).slice(0,7);
+  $("#app").innerHTML = header("Archive", tabsFor()) + `
+    <div class="datebar">
+      <div class="d"><span class="faint">Deliveries in</span><b>${esc(monthLabel(A.month))}</b></div>
+      <div class="dnav"><button class="iconbtn" aria-label="Previous month" id="mprev">${ICON.left}</button>
+        <button class="iconbtn" aria-label="Next month" id="mnext" ${A.month>=cur?"disabled":""}>${ICON.right}</button>
+        <select class="input" id="abr" aria-label="Branch" style="height:38px;width:auto;min-width:140px"><option value="">All branches</option>${S.boot.branches.map(b=>`<option value="${b.id}" ${A.branch===b.id?"selected":""}>${esc(bn(b.name))}</option>`).join("")}</select></div>
+    </div>
+    <div class="stats"><div><b class="num" id="a1">–</b><span>Archived orders</span></div><div><b class="num" id="a2">–</b><span>All orders this month</span></div><div><b class="num" id="a3">–</b><span>Branches ordered</span></div></div>
+    <div class="archbar">
+      <div class="seg seg2" role="group" aria-label="View"><button type="button" data-m="orders" aria-pressed="${A.mode==="orders"}">Archived orders</button><button type="button" data-m="summary" aria-pressed="${A.mode==="summary"}">Monthly summary</button></div>
+      <button class="btn" id="xls">${ICON.sheet}Export Excel</button>
+    </div>
+    <div id="ac"><div class="empty">Loading…</div></div>`;
+  $("#mprev").onclick = () => { A.month = shiftMonth(A.month,-1); renderArchive(); };
+  $("#mnext").onclick = () => { if (A.month < cur){ A.month = shiftMonth(A.month,1); renderArchive(); } };
+  $("#abr").onchange = e => { A.branch = e.target.value; renderArchive(); };
+  document.querySelectorAll(".seg2 button").forEach(b => b.onclick = () => { A.mode = b.dataset.m; document.querySelectorAll(".seg2 button").forEach(x=>x.setAttribute("aria-pressed", x===b)); drawArchive(); });
+  $("#xls").onclick = e => exportExcel(e.currentTarget);
+  drawArchive(true);
+}
+async function drawArchive(first){
+  const ac = $("#ac"); if (!ac) return;
+  let data;
+  try { data = await loadArchive(); } catch(e){ ac.innerHTML = `<div class="empty">${errMsg(e)}</div>`; return; }
+  const all = data.filter(o=>o.status!=="cancelled"), arch = all.filter(o=>o.archived_at);
+  $("#a1").textContent = arch.length; $("#a2").textContent = all.length; $("#a3").textContent = new Set(all.map(o=>o.branch_id)).size;
+  if (S.arch.mode === "summary") return drawSummary(ac, all);
+  if (!arch.length){ ac.innerHTML = `<div class="empty"><h3>Nothing archived in ${esc(monthLabel(S.arch.month))}</h3><p>${all.length ? `There ${all.length===1?"is 1 order":`are ${all.length} orders`} this month still on the board. Archive them from the board once the supplier has received them.` : "No orders were delivered this month."}</p>${all.length?`<button class="btn" onclick="S.arch.mode='summary';renderArchive()">See the monthly summary</button>`:""}</div>`; return; }
+  const days = [...new Set(arch.map(o=>o.delivery_date))];
+  ac.innerHTML = days.map(d => { const l = arch.filter(o=>o.delivery_date===d), dl = dayLabel(d);
+    return `<section class="aday"><div class="adh"><h3>${esc(dl.s)}</h3><span class="faint">${l.length} ${l.length===1?"order":"orders"}</span><button class="btn sm" data-pdf="${d}">PDF</button></div>
+      <div class="tw"><table class="t rt at"><colgroup><col style="width:11%"><col style="width:17%"><col style="width:8%"><col style="width:21%"><col style="width:23%"><col style="width:20%"></colgroup><thead><tr><th>No.</th><th>Branch</th><th>Items</th><th>Quantities</th><th>Status</th><th>Archived</th></tr></thead><tbody>
+      ${l.map(o=>`<tr data-id="${o.id}" tabindex="0"><td>${onum(o.id)}</td><td>${esc(bn(o.branch_name))}</td><td class="num">${o.items.length}</td><td class="num">${esc(unitTotals(o.items))}</td><td><span class="pill ${o.status}">${STATUS[o.status]}</span></td><td class="num faint">${esc(stampLabel(o.archived_at))}</td></tr>`).join("")}
+      </tbody></table></div></section>`; }).join("");
+  ac.querySelectorAll("[data-pdf]").forEach(b => b.onclick = () => downloadPdf(arch.filter(o=>o.delivery_date===b.dataset.pdf), b, true));
+  ac.querySelectorAll("tbody tr").forEach(tr => {
+    const open = () => { const o = arch.find(x => String(x.id) === tr.dataset.id);
+      const m = modal(orderCard(o, "supplier") + `<button class="btn ghost block" id="mc">Close</button>`);
+      $("#mc", m).onclick = () => m.remove();
+      bindCards(m, [o], "supplier", () => { m.remove(); loadArchive(true).then(()=>drawArchive()); }); };
+    tr.onclick = open; tr.onkeydown = e => { if (e.key === "Enter") open(); };
+  });
+  if (first) animateIn("#ac .aday");
+}
+function pivot(list){
+  const order = new Map(S.boot.items.map((i,ix)=>[i.name, ix]));
+  const branches = S.boot.branches.filter(b => list.some(o=>o.branch_id===b.id));
+  const rows = new Map();
+  for (const o of list) for (const l of o.items){
+    const k = l.name + "|" + l.unit;
+    if (!rows.has(k)) rows.set(k, {name:l.name, name_en:l.name_en||"", unit:l.unit, by:{}, total:0});
+    const r = rows.get(k); r.by[o.branch_id] = (r.by[o.branch_id]||0) + Number(l.qty); r.total += Number(l.qty);
+  }
+  const items = [...rows.values()].sort((a,b)=>(order.get(a.name)??999)-(order.get(b.name)??999));
+  const counts = Object.fromEntries(branches.map(b=>[b.id, list.filter(o=>o.branch_id===b.id).length]));
+  return {branches, items, counts};
+}
+function drawSummary(ac, all){
+  if (!all.length){ ac.innerHTML = `<div class="empty"><h3>No orders in ${esc(monthLabel(S.arch.month))}</h3><p>Pick another month with the arrows above.</p></div>`; return; }
+  const P = pivot(all);
+  ac.innerHTML = `<p class="faint" style="margin:0 0 10px">Total quantity of each item per branch, for every order delivered in ${esc(monthLabel(S.arch.month))} (archived or not, cancelled orders left out).</p>
+    <div class="tw pv"><table class="t"><thead><tr><th class="stk">Item</th><th>Unit</th>${P.branches.map(b=>`<th class="n">${esc(bn(b.name))}</th>`).join("")}<th class="n tot">Total</th></tr></thead><tbody>
+    ${P.items.map(r=>`<tr><td class="stk">${esc(r.name_en||r.name)}</td><td class="muted">${esc(ue(r.unit))}</td>${P.branches.map(b=>`<td class="n num">${r.by[b.id]?fmtQty(r.by[b.id]):'<span class="faint">–</span>'}</td>`).join("")}<td class="n num tot">${fmtQty(r.total)}</td></tr>`).join("")}
+    </tbody><tfoot><tr><td class="stk">Orders</td><td></td>${P.branches.map(b=>`<td class="n num">${P.counts[b.id]}</td>`).join("")}<td class="n num tot">${all.length}</td></tr></tfoot></table></div>`;
+}
+let xlsxReady = null;
+function loadXlsx(){
+  if (window.XLSX) return Promise.resolve();
+  return xlsxReady || (xlsxReady = new Promise((ok, bad) => { const sc = document.createElement("script");
+    sc.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"; sc.onload = ok; sc.onerror = () => { xlsxReady = null; bad(new Error("Failed to fetch")); }; document.head.appendChild(sc); }));
+}
+async function exportExcel(btn){
+  const t = btn.innerHTML; btn.setAttribute("aria-busy","true"); btn.textContent = "Preparing Excel…";
+  try {
+    const [data] = await Promise.all([loadArchive(), loadXlsx()]);
+    const all = data.filter(o=>o.status!=="cancelled");
+    if (!all.length){ toast("No orders this month to export"); return; }
+    const d = iso => iso ? new Date(iso) : "";
+    const day = s => new Date(s + "T00:00:00");
+    const P = pivot(all), wb = XLSX.utils.book_new();
+    const sum = [["Item","Unit",...P.branches.map(b=>bn(b.name)),"Total"],
+      ...P.items.map(r=>[r.name_en||r.name, ue(r.unit), ...P.branches.map(b=>r.by[b.id]||0), r.total]),
+      ["Orders","",...P.branches.map(b=>P.counts[b.id]), all.length]];
+    const ws1 = XLSX.utils.aoa_to_sheet(sum); ws1["!cols"] = [{wch:22},{wch:9},...P.branches.map(()=>({wch:13})),{wch:10}];
+    const lines = [["Order no.","Delivery date","Branch","Item","Unit","Qty","Status","Received at","Delivered at","Archived","Note"]];
+    const sorted = [...all].sort((a,b)=>a.delivery_date.localeCompare(b.delivery_date) || a.id-b.id);
+    for (const o of sorted) for (const l of o.items) lines.push([o.id, day(o.delivery_date), bn(o.branch_name), l.name_en||l.name, ue(l.unit), Number(l.qty), STATUS[o.status], d(o.received_at), d(o.delivered_at), o.archived_at?"Yes":"No", o.note||""]);
+    const ws2 = XLSX.utils.aoa_to_sheet(lines, {cellDates:true, dateNF:"dd mmm yyyy"});
+    ws2["!cols"] = [{wch:10},{wch:14},{wch:14},{wch:22},{wch:9},{wch:7},{wch:20},{wch:18},{wch:18},{wch:9},{wch:30}];
+    const orders = [["Order no.","Delivery date","Branch","Items","Quantities","Status","Sent at","Received at","Delivered at","Archived","Note"],
+      ...sorted.map(o=>[o.id, day(o.delivery_date), bn(o.branch_name), o.items.length, unitTotals(o.items), STATUS[o.status], d(o.created_at), d(o.received_at), d(o.delivered_at), o.archived_at?"Yes":"No", o.note||""])];
+    const ws3 = XLSX.utils.aoa_to_sheet(orders, {cellDates:true, dateNF:"dd mmm yyyy"});
+    ws3["!cols"] = [{wch:10},{wch:14},{wch:14},{wch:7},{wch:20},{wch:20},{wch:18},{wch:18},{wch:18},{wch:9},{wch:30}];
+    const fmt = (ws, timeCols) => { for (const k in ws) if (ws[k] && ws[k].t === "d") ws[k].z = timeCols.includes(k.replace(/\d+$/,"")) ? "dd mmm yyyy hh:mm" : "dd mmm yyyy"; };
+    fmt(ws2, ["H","I"]); fmt(ws3, ["G","H","I"]);
+    XLSX.utils.book_append_sheet(wb, ws1, "Monthly summary");
+    XLSX.utils.book_append_sheet(wb, ws3, "Orders");
+    XLSX.utils.book_append_sheet(wb, ws2, "Order lines");
+    const br = S.arch.branch ? "-" + bn((S.boot.branches.find(b=>b.id===S.arch.branch)||{}).name||"").replace(/\s+/g,"-") : "";
+    XLSX.writeFile(wb, `veg-orders-${S.arch.month}${br}.xlsx`);
+  } catch(e){ toast(errMsg(e)); }
+  finally { btn.removeAttribute("aria-busy"); btn.innerHTML = t; }
 }
 
 /* ---------- PIN change & recovery ---------- */
