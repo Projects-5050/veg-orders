@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<title>طلبات الخضرة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* Layout: one working column (max 760px), sticky header + sticky action bar; tables over cards */
+:root{
+  --paper:#FFFFFF; --sheet:#F6F5F3; --ink:#141414; --ink-2:#5E5B57; --ink-3:#8E8A85;
+  --line:#E6E3DF; --line-strong:#141414; --red:#C8102E; --red-ink:#FFFFFF; --red-soft:#FBE9EC;
+  --ok:#1F7A45; --ok-soft:#E6F3EB; --warn:#9A6200; --warn-soft:#FBF1DE;
+  --display:"Alexandria","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  --r:6px; color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#131313; --sheet:#1C1B1A; --ink:#F3F1EE; --ink-2:#B3AEA8; --ink-3:#827D77;
+  --line:#2C2A28; --line-strong:#F3F1EE; --red:#E5354F; --red-ink:#FFFFFF; --red-soft:#3A1A20;
+  --ok:#5BC489; --ok-soft:#173023; --warn:#E5B04F; --warn-soft:#33270F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#131313; --sheet:#1C1B1A; --ink:#F3F1EE; --ink-2:#B3AEA8; --ink-3:#827D77;
+  --line:#2C2A28; --line-strong:#F3F1EE; --red:#E5354F; --red-ink:#FFFFFF; --red-soft:#3A1A20;
+  --ok:#5BC489; --ok-soft:#173023; --warn:#E5B04F; --warn-soft:#33270F; color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.6 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:env(safe-area-inset-top,0px)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--paper);z-index:30}
+.wrap{max-width:760px;margin:0 auto;padding-block:0 140px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:0}
+h1{font-size:28px;font-weight:800;line-height:1.2}
+h2{font-size:20px;font-weight:700}
+h3{font-size:16px;font-weight:700}
+.muted{color:var(--ink-2)} .faint{color:var(--ink-3);font-size:13px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:var(--r);
+  border:1.5px solid var(--line-strong);background:transparent;font-weight:600;font-size:15px;white-space:nowrap}
+.btn:hover{background:var(--sheet)}
+.btn.primary{background:var(--red);border-color:var(--red);color:var(--red-ink)}
+.btn.primary:hover{filter:brightness(.94)}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.btn.ghost{border-color:var(--line)}
+.btn.sm{min-height:34px;padding:0 12px;font-size:13px}
+.btn.block{width:100%}
+.btn[aria-busy="true"]{opacity:.6;pointer-events:none}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:600;color:var(--ink-2)}
+.input{height:46px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--paper);padding:0 12px;width:100%;min-width:0}
+.input:focus{border-color:var(--ink);outline:none}
+textarea.input{height:auto;min-height:70px;padding:10px 12px;resize:vertical}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--paper);border-bottom:2px solid var(--line-strong);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px}
+.brand{display:flex;flex-direction:column;line-height:1.15}
+.brand b{font-family:var(--display);font-weight:800;font-size:19px}
+.brand span{font-size:12px;color:var(--ink-2)}
+.tag{display:inline-flex;align-items:center;gap:6px;background:var(--red);color:var(--red-ink);font-size:12px;font-weight:600;padding:3px 9px;border-radius:4px}
+.iconbtn{width:38px;height:38px;border-radius:var(--r);border:1.5px solid var(--line);background:transparent;display:inline-flex;align-items:center;justify-content:center}
+.iconbtn svg{width:18px;height:18px}
+.tabs{display:flex;gap:4px;border-bottom:1.5px solid var(--line);margin-top:14px;overflow-x:auto;scrollbar-width:none}
+.tabs button{border:0;background:none;padding:10px 12px;font-weight:600;color:var(--ink-2);border-bottom:3px solid transparent;margin-bottom:-1.5px;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--red)}
+
+/* login */
+.login{min-height:100svh;display:grid;align-content:center;gap:28px;max-width:420px;margin:0 auto;padding-block:40px}
+.mark{display:flex;flex-direction:column;gap:6px}
+.mark .rule{height:4px;width:56px;background:var(--red)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1.5px solid var(--line-strong);border-radius:var(--r);overflow:hidden}
+.seg button{border:0;background:transparent;padding:11px 4px;font-weight:600}
+.seg button+button{border-inline-start:1.5px solid var(--line-strong)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.err{color:var(--red);font-size:13px;min-height:20px}
+
+/* order sheet */
+.datebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:16px;flex-wrap:wrap}
+.datebar .d{display:flex;flex-direction:column}
+.datebar .d b{font-family:var(--display);font-size:20px}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-block:4px 10px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 66px);background:var(--paper);z-index:10}
+.chip{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.search{position:relative;margin-bottom:6px}
+.search input{padding-inline-start:38px}
+.search svg{position:absolute;inset-inline-start:12px;top:14px;width:18px;height:18px;color:var(--ink-3)}
+.cat{font-family:var(--display);font-weight:700;font-size:13px;color:var(--red);padding:18px 0 6px;border-bottom:2px solid var(--line-strong)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row.on .nm{font-weight:600}
+.row.on{background:linear-gradient(to left,var(--red-soft),transparent 60%)}
+.nm{font-size:16px} .un{font-size:12px;color:var(--ink-3)}
+.step{display:flex;align-items:center;gap:4px}
+.step button{width:40px;height:40px;border-radius:var(--r);border:1.5px solid var(--line);background:transparent;font-size:20px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.step button.plus{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.step input{width:56px;height:40px;text-align:center;border:1.5px solid transparent;border-radius:var(--r);background:transparent;font-weight:600;font-size:17px;font-variant-numeric:tabular-nums}
+.step input::placeholder{color:var(--ink-3);font-weight:400}
+.step input:focus{border-color:var(--ink);outline:none}
+.row.on .step input{color:var(--red)}
+.bar{position:fixed;inset:auto 0 0;z-index:25;background:var(--paper);border-top:2px solid var(--line-strong);
+  padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.bar .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:12px;justify-content:space-between}
+.bar .count{display:flex;flex-direction:column;line-height:1.2}
+.bar .count b{font-family:var(--display);font-size:24px}
+.empty{padding:40px 0;text-align:center;color:var(--ink-2)}
+
+/* sheet / modal */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--paper);width:100%;max-width:640px;max-height:88svh;overflow:auto;border-radius:14px 14px 0 0;
+  padding:20px max(18px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px}
+@media (min-width:700px){.scrim{align-items:center}.sheet{border-radius:14px}}
+table.t{width:100%;border-collapse:collapse;font-size:14px}
+table.t th{text-align:start;font-size:12px;color:var(--ink-2);font-weight:600;border-bottom:2px solid var(--line-strong);padding:6px 4px}
+table.t td{border-bottom:1px solid var(--line);padding:8px 4px;vertical-align:middle}
+table.t td.q{text-align:end;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tw{overflow-x:auto}
+
+/* history & supplier */
+.card{border:1.5px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px}
+.card.new{border-color:var(--line-strong)}
+.card .h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.new{background:var(--red-soft);color:var(--red)}
+.pill.received{background:var(--warn-soft);color:var(--warn)}
+.pill.delivered{background:var(--ok-soft);color:var(--ok)}
+.pill.cancelled{background:var(--sheet);color:var(--ink-3)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.list{display:flex;flex-direction:column;gap:10px;padding-block:12px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1.5px solid var(--line-strong);border-radius:var(--r);margin-block:4px 14px}
+.stats div{padding:10px 12px;display:flex;flex-direction:column}
+.stats div+div{border-inline-start:1.5px solid var(--line-strong)}
+.stats b{font-family:var(--display);font-size:24px;line-height:1.2}
+.stats span{font-size:12px;color:var(--ink-2)}
+.missing{display:flex;flex-wrap:wrap;gap:6px}
+.missing span{font-size:12px;border:1px dashed var(--ink-3);border-radius:4px;padding:2px 8px;color:var(--ink-2)}
+.dnav{display:flex;align-items:center;gap:6px}
+.section{padding-block:18px;display:flex;flex-direction:column;gap:12px}
+.section+.section{border-top:1.5px solid var(--line)}
+.ed{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 92px 92px 40px;gap:6px;align-items:center}
+.ed .input{height:40px;padding:0 8px}
+.ed button{height:40px}
+@media (max-width:560px){.ed{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px}.ed select{grid-row:2}.ed .catsel{display:none}.ed{padding-bottom:8px;border-bottom:1px solid var(--line)}}
+.pins{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.toast{position:fixed;inset-inline:0;bottom:calc(96px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;z-index:60;pointer-events:none}
+.toast div{background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:var(--r);font-weight:600;font-size:14px;max-width:90vw}
+.done{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:12px 0}
+.check{width:64px;height:64px;border-radius:50%;background:var(--red);color:var(--red-ink);display:flex;align-items:center;justify-content:center}
+.check svg{width:32px;height:32px}
+
+/* pdf page (always light, rendered off-screen) */
+#pdfHost{position:fixed;left:-10000px;top:0;width:794px;pointer-events:none}
+.pp{width:794px;min-height:1120px;background:#fff;color:#141414;padding:48px 52px;font-family:var(--body);direction:rtl;position:relative}
+.pp .ph{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #141414;padding-bottom:14px}
+.pp .ph .l b{font-family:var(--display);font-size:26px;font-weight:800;display:block;line-height:1.2}
+.pp .ph .l span{font-size:13px;color:#5E5B57}
+.pp .po{text-align:left;direction:ltr}
+.pp .po b{display:block;font-family:var(--display);font-size:13px;letter-spacing:.08em;color:#C8102E}
+.pp .po span{font-family:var(--display);font-size:24px;font-weight:700}
+.pp .meta{display:grid;grid-template-columns:repeat(3,1fr);margin:18px 0;border:1.5px solid #141414}
+.pp .meta div{padding:10px 12px;display:flex;flex-direction:column}
+.pp .meta div+div{border-right:1.5px solid #141414}
+.pp .meta span{font-size:11px;color:#5E5B57}
+.pp .meta b{font-size:16px}
+.pp table{width:100%;border-collapse:collapse;font-size:15px}
+.pp th{background:#141414;color:#fff;font-weight:600;text-align:right;padding:8px 10px;font-size:13px}
+.pp td{padding:9px 10px;border-bottom:1px solid #E6E3DF}
+.pp tr:nth-child(even) td{background:#F6F5F3}
+.pp td.c{text-align:center;width:60px;color:#8E8A85}
+.pp td.q{text-align:center;font-weight:700;width:90px;font-variant-numeric:tabular-nums}
+.pp td.u{width:80px;color:#5E5B57}
+.pp td.k{width:80px}
+.pp td.en{direction:ltr;text-align:left;font-size:13px;color:#5E5B57;letter-spacing:.02em}
+.pp .note{margin-top:16px;border:1.5px dashed #8E8A85;padding:10px 12px;font-size:14px}
+.pp .sig{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:48px;font-size:13px;color:#5E5B57}
+.pp .sig div{border-top:1.5px solid #141414;padding-top:6px}
+.pp .foot{position:absolute;bottom:28px;right:52px;left:52px;display:flex;justify-content:space-between;font-size:11px;color:#8E8A85;border-top:1px solid #E6E3DF;padding-top:8px}
+.pp .bar5{height:6px;background:#C8102E;width:72px;margin-bottom:10px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="pdfHost" aria-hidden="true"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+const SB_URL = "https://lzadmbjhcxqvafykntsp.supabase.co";
+const SB_KEY = "sb_publishable_X4VEzOBLuT8d-b7Tsz9IJQ_1QHW9BIe";
+const AR = {"Aali":"عالي","Hamad Town":"مدينة حمد","Jeblat Hebshi":"جبلة حبشي","Malikya":"المالكية","Muharraq":"المحرق","Saar":"سار","Sanad":"سند","Sitra":"سترة","Zinj":"الزنج"};
+const UNITS = ["كيلو","كرتون","كيس","ربطة","حبة","صندوق","علبة","صينية"];
+const CATS = ["ورقيات","خضار","أعشاب","فواكه"];
+const STATUS = {new:"جديد",received:"استلمه المورد",delivered:"تم التوصيل",cancelled:"ملغي"};
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const bn = n => AR[n] || n;
+const pad = id => String(id).padStart(5, "0");
+const onum = id => `<bdi dir="ltr" class="num">#${pad(id)}</bdi>`;
+const fmtQty = q => { const n = Number(q); return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/0+$/,"").replace(/\.$/,""); };
+const ls = { get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+             set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+             del(k){ try { localStorage.removeItem(k); } catch {} } };
+
+function bhDate(offset=0){
+  const p = new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Bahrain",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+  const d = new Date(p + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + offset);
+  return d.toISOString().slice(0,10);
+}
+function shiftDate(iso, n){ const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
+function dayLabel(iso){
+  const d = new Date(iso + "T12:00:00Z");
+  const s = new Intl.DateTimeFormat("ar-BH-u-nu-latn",{weekday:"long",day:"numeric",month:"long",timeZone:"UTC"}).format(d);
+  const rel = iso === bhDate(0) ? "اليوم" : iso === bhDate(1) ? "بكرة" : iso === bhDate(-1) ? "أمس" : "";
+  return {s, rel};
+}
+function timeLabel(ts){ return new Intl.DateTimeFormat("ar-BH-u-nu-latn",{timeZone:"Asia/Bahrain",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}).format(new Date(ts)); }
+
+async function rpc(fn, args={}){
+  const r = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, {method:"POST",
+    headers:{"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`,"Content-Type":"application/json"}, body:JSON.stringify(args)});
+  const t = await r.text(); let j = null; try { j = t ? JSON.parse(t) : null; } catch {}
+  if (!r.ok) { const m = (j && j.message) || "تعذّر الاتصال"; throw new Error(m); }
+  return j;
+}
+function errMsg(e){
+  const m = String(e && e.message || e);
+  if (m.includes("unauthorized")) return "الرقم السري غير صحيح.";
+  if (m.includes("empty")) return "أضف كمية لصنف واحد على الأقل.";
+  if (m.includes("locked")) return "ما يمكن إلغاء الطلب بعد ما استلمه المورد.";
+  if (m.includes("Failed to fetch") || m.includes("تعذّر")) return "ما في اتصال بالإنترنت. حاول مرة ثانية.";
+  return "صار خطأ. حاول مرة ثانية.";
+}
+function toast(msg){
+  const t = document.createElement("div"); t.className = "toast"; t.innerHTML = `<div>${esc(msg)}</div>`;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
+}
+const ICON = {
+  out:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2"/><path d="M9 12h12l-3-3m0 6 3-3"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="m21 21-6-6"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>',
+  right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
+  left:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>',
+  refresh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>'
+};
+
+/* ---------- state ---------- */
+const S = {
+  boot:null, session: ls.get("veg.session"), view:"order",
+  qty:{}, note:"", delivery: bhDate(1), cat:"الكل", q:"",
+  history:[], date: bhDate(1), orders:[], admin:null
+};
+
+function animateIn(sel){
+  if (RM || !window.gsap) return;
+  const els = document.querySelectorAll(sel); if (!els.length) return;
+  gsap.from(els, {opacity:0, y:10, duration:.35, stagger:.025, ease:"power2.out", clearProps:"all"});
+}
+
+/* ---------- boot ---------- */
+async function boot(){
+  $("#app").innerHTML = `<div class="login"><div class="mark"><div class="rule"></div><h1>طلبات الخضرة</h1><span class="muted">جاري التحميل…</span></div></div>`;
+  try { S.boot = await rpc("veg_bootstrap"); }
+  catch(e){ $("#app").innerHTML = `<div class="login"><div class="mark"><div class="rule"></div><h1>طلبات الخضرة</h1></div><p class="err">${errMsg(e)}</p><button class="btn dark" onclick="boot()">إعادة المحاولة</button></div>`; return; }
+  if (S.session){
+    try {
+      const r = await rpc("veg_login",{p_branch:S.session.branch||null,p_pin:S.session.pin});
+      if (r !== S.session.role) throw 0;
+    } catch { S.session = null; ls.del("veg.session"); }
+  }
+  if (S.session && S.session.role === "branch"){ const d = ls.get("veg.draft." + S.session.branch); if (d) { S.qty = d.qty || {}; S.note = d.note || ""; } }
+  route();
+}
+function route(){
+  if (!S.session) return renderLogin();
+  if (S.session.role === "branch") return S.view === "history" ? renderHistory() : renderOrder();
+  if (S.session.role === "admin" && S.view === "settings") return renderSettings();
+  return renderSupplier();
+}
+function logout(){ S.session = null; ls.del("veg.session"); S.view = "order"; S.qty = {}; S.note=""; route(); }
+
+/* ---------- login ---------- */
+function renderLogin(){
+  let role = "branch";
+  const br = S.boot.branches;
+  $("#app").innerHTML = `
+  <div class="login">
+    <div class="mark"><div class="rule"></div><h1>طلبات الخضرة</h1><span class="muted">فريج بن عاقول · أوامر شراء الخضروات للفروع</span></div>
+    <div class="seg" role="group" aria-label="نوع الدخول">
+      <button type="button" data-r="branch" aria-pressed="true">مدير فرع</button>
+      <button type="button" data-r="supplier" aria-pressed="false">المورد</button>
+      <button type="button" data-r="admin" aria-pressed="false">الإدارة</button>
+    </div>
+    <form id="lf" style="display:flex;flex-direction:column;gap:14px" novalidate>
+      <div class="field" id="bf"><label for="lb">الفرع</label>
+        <select class="input" id="lb"><option value="">اختر الفرع</option>${br.map(b=>`<option value="${b.id}">${esc(bn(b.name))}</option>`).join("")}</select></div>
+      <div class="field"><label for="lp">الرقم السري</label><input class="input num" id="lp" inputmode="numeric" autocomplete="current-password" type="password" placeholder="••••"></div>
+      <div class="err" id="le" role="alert"></div>
+      <button class="btn primary block" id="lgo">دخول</button>
+    </form>
+  </div>`;
+  const last = ls.get("veg.lastBranch"); if (last) $("#lb").value = last;
+  document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+    role = b.dataset.r; document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", x===b));
+    $("#bf").hidden = role !== "branch"; $("#le").textContent = "";
+  });
+  ["lb","lp"].forEach(id => $("#"+id).addEventListener("input", () => $("#le").textContent = ""));
+  $("#lf").onsubmit = async ev => {
+    ev.preventDefault();
+    const pin = $("#lp").value.trim(), branch = role === "branch" ? $("#lb").value : null;
+    if (role === "branch" && !branch) return $("#le").textContent = "اختر الفرع أولاً.";
+    if (!pin) return $("#le").textContent = "اكتب الرقم السري.";
+    const b = $("#lgo"); b.setAttribute("aria-busy","true");
+    try {
+      const r = await rpc("veg_login",{p_branch:branch,p_pin:pin});
+      if (!r || (role !== "branch" && r !== role)) throw new Error("unauthorized");
+      S.session = {role:r, pin, branch, branchName: branch ? br.find(x=>x.id===branch).name : null};
+      ls.set("veg.session", S.session); if (branch) ls.set("veg.lastBranch", branch);
+      S.view = r === "branch" ? "order" : "board";
+      if (branch){ const d = ls.get("veg.draft." + branch); S.qty = (d && d.qty) || {}; S.note = (d && d.note) || ""; }
+      route();
+    } catch(e){ $("#le").textContent = errMsg(e); b.removeAttribute("aria-busy"); }
+  };
+}
+
+/* ---------- branch: order ---------- */
+function header(sub, tabs){
+  const s = S.session;
+  return `<header class="top"><div class="brand"><b>طلبات الخضرة</b><span>${esc(sub)}</span></div>
+    <div style="display:flex;align-items:center;gap:8px">${s.role==="branch"?`<span class="tag">${esc(bn(s.branchName))}</span>`:s.role==="supplier"?`<span class="tag">المورد</span>`:`<span class="tag">الإدارة</span>`}
+    <button class="iconbtn" aria-label="خروج" title="خروج" onclick="logout()">${ICON.out}</button></div></header>
+    ${tabs?`<nav class="tabs" role="tablist">${tabs.map(t=>`<button role="tab" aria-selected="${S.view===t[0]}" onclick="S.view='${t[0]}';route()">${t[1]}</button>`).join("")}</nav>`:""}`;
+}
+function saveDraft(){ if (S.session && S.session.branch) ls.set("veg.draft." + S.session.branch, {qty:S.qty, note:S.note}); }
+function selectedLines(){
+  return S.boot.items.filter(i => Number(S.qty[i.id]) > 0).map(i => ({name:i.name, name_en:i.name_en||"", unit:i.unit, qty:Number(S.qty[i.id])}));
+}
+function renderOrder(){
+  const items = S.boot.items, cats = ["الكل", ...CATS.filter(c => items.some(i=>i.category===c)), ...[...new Set(items.map(i=>i.category))].filter(c=>!CATS.includes(c))];
+  const dl = dayLabel(S.delivery);
+  $("#app").innerHTML = header("طلب جديد", [["order","طلب جديد"],["history","طلباتي"]]) + `
+    <div class="datebar">
+      <div class="d"><span class="faint">التوصيل</span><b>${dl.rel ? dl.rel + " · " : ""}${esc(dl.s)}</b></div>
+      <div class="dnav"><button class="iconbtn" aria-label="اليوم السابق" onclick="setDelivery(-1)">${ICON.right}</button>
+      <button class="iconbtn" aria-label="اليوم التالي" onclick="setDelivery(1)">${ICON.left}</button>
+      <button class="btn sm ghost" onclick="repeatLast()">كرّر آخر طلب</button></div>
+    </div>
+    <div class="search">${ICON.search}<input class="input" id="sq" type="search" placeholder="ابحث: طماط، TOMATO…" value="${esc(S.q)}" aria-label="بحث"></div>
+    <div class="chips" role="group" aria-label="الأقسام">${cats.map(c=>`<button class="chip" aria-pressed="${S.cat===c}" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+    <div id="rows"></div>
+    <div class="field" style="margin-top:18px"><label for="note">ملاحظة للمورد (اختياري)</label><textarea class="input" id="note" placeholder="مثال: الطماط يكون أحمر وناضج">${esc(S.note)}</textarea></div>
+    <div class="bar"><div class="in"><div class="count"><b class="num" id="cnt">0</b><span class="faint">صنف في الطلب</span></div>
+      <div style="display:flex;gap:8px"><button class="btn ghost" id="clr">تفريغ</button><button class="btn primary" id="rev">مراجعة وإرسال</button></div></div></div>`;
+  document.querySelectorAll(".chip").forEach(b => b.onclick = () => { S.cat = b.dataset.c; document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed", x===b)); drawRows(); });
+  $("#sq").oninput = e => { S.q = e.target.value.trim(); drawRows(); };
+  $("#note").oninput = e => { S.note = e.target.value; saveDraft(); };
+  $("#clr").onclick = () => { if (!Object.keys(S.qty).length) return; S.qty = {}; saveDraft(); drawRows(); toast("تم تفريغ الكميات"); };
+  $("#rev").onclick = openReview;
+  drawRows(true);
+}
+function setDelivery(n){
+  const d = shiftDate(S.delivery, n); if (d < bhDate(0)) return toast("ما يمكن اختيار يوم فات");
+  S.delivery = d; renderOrder();
+}
+function drawRows(first){
+  const items = S.boot.items.filter(i => (S.cat==="الكل" || i.category===S.cat) && (!S.q || i.name.includes(S.q) || (i.name_en||"").toLowerCase().includes(S.q.toLowerCase())));
+  let html = "", lastCat = null;
+  for (const i of items){
+    if (S.cat==="الكل" && !S.q && i.category !== lastCat){ html += `<div class="cat">${esc(i.category)}</div>`; lastCat = i.category; }
+    const q = S.qty[i.id] || 0;
+    html += `<div class="row ${q>0?"on":""}" data-id="${i.id}"><div><div class="nm">${esc(i.name)}</div><div class="un">${esc(i.unit)}${i.name_en?` · <bdi dir="ltr">${esc(i.name_en)}</bdi>`:""}</div></div>
+      <div class="step"><button class="minus" aria-label="نقص ${esc(i.name)}">−</button>
+      <input inputmode="decimal" class="num" aria-label="كمية ${esc(i.name)}" value="${q?fmtQty(q):""}" placeholder="0">
+      <button class="plus" aria-label="زيادة ${esc(i.name)}">+</button></div></div>`;
+  }
+  $("#rows").innerHTML = html || `<div class="empty">ما في صنف بهذا الاسم.</div>`;
+  $("#rows").querySelectorAll(".row").forEach(r => {
+    const id = r.dataset.id, inp = $("input", r);
+    const set = v => { v = Math.max(0, Math.round(v*100)/100); if (v) S.qty[id] = v; else delete S.qty[id]; inp.value = v ? fmtQty(v) : ""; r.classList.toggle("on", v>0); saveDraft(); updCount(); };
+    $(".plus", r).onclick = () => { set((Number(S.qty[id])||0) + 1); if (!RM && window.gsap) gsap.fromTo(inp,{scale:1.25},{scale:1,duration:.25,ease:"back.out(3)"}); };
+    $(".minus", r).onclick = () => set((Number(S.qty[id])||0) - 1);
+    inp.onchange = () => set(Number(String(inp.value).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(",", ".")) || 0);
+    inp.onfocus = () => inp.select();
+  });
+  updCount();
+  if (first) animateIn("#rows .row");
+}
+function updCount(){ const n = Object.keys(S.qty).filter(k => S.boot.items.some(i=>i.id===k)).length; const c = $("#cnt"); if (c) c.textContent = n; }
+async function repeatLast(){
+  try {
+    const h = await rpc("veg_branch_orders",{p_branch:S.session.branch,p_pin:S.session.pin});
+    const last = h.find(o => o.status !== "cancelled");
+    if (!last) return toast("ما في طلب سابق");
+    S.qty = {};
+    for (const l of last.items){ const it = S.boot.items.find(i => i.name === l.name || (l.name_en && i.name_en === l.name_en)); if (it) S.qty[it.id] = Number(l.qty); }
+    saveDraft(); drawRows(); toast(`تم نسخ طلب #${pad(last.id)}`);
+  } catch(e){ toast(errMsg(e)); }
+}
+function modal(html){
+  const m = document.createElement("div"); m.className = "scrim"; m.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" data-lenis-prevent>${html}</div>`;
+  m.addEventListener("click", e => { if (e.target === m) m.remove(); });
+  document.body.appendChild(m);
+  if (!RM && window.gsap) gsap.from($(".sheet", m), {y:40, opacity:0, duration:.3, ease:"power3.out"});
+  return m;
+}
+function linesTable(lines){
+  return `<div class="tw"><table class="t"><thead><tr><th>الصنف</th><th>الوحدة</th><th style="text-align:end">الكمية</th></tr></thead><tbody>
+  ${lines.map(l=>`<tr><td>${esc(l.name)}${l.name_en?`<div class="faint" dir="ltr" style="text-align:right">${esc(l.name_en)}</div>`:""}</td><td class="muted">${esc(l.unit)}</td><td class="q">${fmtQty(l.qty)}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function openReview(){
+  const lines = selectedLines();
+  if (!lines.length) return toast("أضف كمية لصنف واحد على الأقل");
+  const dl = dayLabel(S.delivery);
+  const m = modal(`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2>مراجعة الطلب</h2><span class="tag">${esc(bn(S.session.branchName))}</span></div>
+    <div class="muted">التوصيل: <b style="color:var(--ink)">${dl.rel?dl.rel+" · ":""}${esc(dl.s)}</b> · ${lines.length} صنف</div>
+    ${linesTable(lines)}
+    ${S.note.trim()?`<div class="card"><span class="faint">ملاحظة</span>${esc(S.note)}</div>`:""}
+    <div class="err" id="re" role="alert"></div>
+    <div style="display:flex;gap:8px"><button class="btn ghost" id="rb">تعديل</button><button class="btn primary" style="flex:1" id="rs">إرسال للمورد</button></div>`);
+  $("#rb", m).onclick = () => m.remove();
+  $("#rs", m).onclick = async () => {
+    const b = $("#rs", m); b.setAttribute("aria-busy","true"); b.textContent = "جاري الإرسال…";
+    try {
+      const o = await rpc("veg_submit_order",{p_branch:S.session.branch,p_pin:S.session.pin,p_items:lines,p_note:S.note,p_delivery:S.delivery});
+      S.qty = {}; S.note = ""; saveDraft(); m.remove(); renderOrder(); showSent(o);
+    } catch(e){ $("#re", m).textContent = errMsg(e); b.removeAttribute("aria-busy"); b.textContent = "إرسال للمورد"; }
+  };
+}
+function showSent(o){
+  const sup = S.boot.supplier || {};
+  const m = modal(`<div class="done"><div class="check">${ICON.check}</div><h2>انحفظ الطلب ${onum(o.id)}</h2>
+    <p class="muted" style="margin:0">الطلب صار يظهر في لوحة المورد. أرسل له ملف أمر الشراء على الواتساب.</p></div>
+    <button class="btn primary block" id="sw">إرسال PDF بالواتساب</button>
+    <button class="btn block" id="sd">تنزيل PDF</button>
+    ${sup.whatsapp?`<p class="faint" style="margin:0;text-align:center">واتساب المورد: <span class="num" dir="ltr">+${esc(sup.whatsapp)}</span></p>`:`<p class="faint" style="margin:0;text-align:center">رقم واتساب المورد غير مضاف بعد. تضيفه الإدارة من الإعدادات.</p>`}
+    <button class="btn ghost block" id="sc">تم</button>`);
+  if (!RM && window.gsap) gsap.from($(".check", m), {scale:0, rotate:-45, duration:.5, ease:"back.out(2)", delay:.1});
+  $("#sw", m).onclick = e => sendWhatsApp([o], e.currentTarget);
+  $("#sd", m).onclick = e => downloadPdf([o], e.currentTarget);
+  $("#sc", m).onclick = () => m.remove();
+}
+
+/* ---------- branch: history ---------- */
+async function renderHistory(){
+  $("#app").innerHTML = header("طلباتي", [["order","طلب جديد"],["history","طلباتي"]]) + `<div class="list" id="hl"><div class="empty">جاري التحميل…</div></div>`;
+  try { S.history = await rpc("veg_branch_orders",{p_branch:S.session.branch,p_pin:S.session.pin}); }
+  catch(e){ $("#hl").innerHTML = `<div class="empty">${errMsg(e)}</div>`; return; }
+  if (!S.history.length){ $("#hl").innerHTML = `<div class="empty"><h3>ما في طلبات لهذا الفرع بعد</h3><p>أول طلب ترسله يظهر هنا مع حالته.</p><button class="btn primary" onclick="S.view='order';route()">طلب جديد</button></div>`; return; }
+  $("#hl").innerHTML = S.history.map(o => orderCard(o, "branch")).join("");
+  bindCards($("#hl"), S.history, "branch");
+  animateIn("#hl .card");
+}
+function orderCard(o, mode){
+  const dl = dayLabel(o.delivery_date);
+  const head = mode === "branch" ? `طلب ${onum(o.id)}` : `${esc(bn(o.branch_name))}`;
+  const sub = mode === "branch" ? `توصيل ${dl.rel?dl.rel+" · ":""}${esc(dl.s)}` : `${onum(o.id)} · أُرسل ${esc(timeLabel(o.created_at))}`;
+  let acts = "";
+  if (o.status !== "cancelled"){
+    acts += `<button class="btn sm" data-a="pdf">PDF</button>`;
+    if (mode === "branch"){ acts += `<button class="btn sm" data-a="wa">واتساب</button>`; if (o.status === "new") acts += `<button class="btn sm ghost" data-a="cancel">إلغاء</button>`; }
+    else { if (o.status === "new") acts += `<button class="btn sm dark" data-a="received">تم الاستلام</button>`;
+           if (o.status !== "delivered") acts += `<button class="btn sm primary" data-a="delivered">تم التوصيل</button>`;
+           else acts += `<button class="btn sm ghost" data-a="new">إرجاع لجديد</button>`; }
+  }
+  return `<article class="card ${o.status==="new"?"new":""}" data-id="${o.id}">
+    <div class="h"><div><h3>${head}</h3><div class="faint">${sub} · ${o.items.length} صنف</div></div><span class="pill ${o.status}">${STATUS[o.status]}</span></div>
+    ${o.status!=="cancelled"?`<details${mode!=="branch"?" open":""}><summary class="faint" style="cursor:pointer">الأصناف</summary>${linesTable(o.items)}</details>`:""}
+    ${o.note?`<div class="faint">ملاحظة: <span style="color:var(--ink)">${esc(o.note)}</span></div>`:""}
+    ${acts?`<div class="acts">${acts}</div>`:""}</article>`;
+}
+function bindCards(root, list, mode){
+  root.querySelectorAll(".card").forEach(c => {
+    const o = list.find(x => String(x.id) === c.dataset.id);
+    c.querySelectorAll("[data-a]").forEach(b => b.onclick = async () => {
+      const a = b.dataset.a;
+      if (a === "pdf") return downloadPdf([o], b);
+      if (a === "wa") return sendWhatsApp([o], b);
+      if (a === "cancel"){
+        if (b.dataset.sure !== "1"){ b.dataset.sure = "1"; b.textContent = "متأكد؟ اضغط للإلغاء"; b.classList.add("primary"); return; }
+        try { await rpc("veg_cancel_order",{p_branch:S.session.branch,p_pin:S.session.pin,p_id:o.id}); toast("تم إلغاء الطلب"); renderHistory(); }
+        catch(e){ toast(errMsg(e)); }
+        return;
+      }
+      b.setAttribute("aria-busy","true");
+      try { await rpc("veg_set_status",{p_pin:S.session.pin,p_id:o.id,p_status:a}); toast(a==="delivered"?"تم تسجيل التوصيل":a==="received"?"تم تسجيل الاستلام":"رجع الطلب لجديد"); loadBoard(true); }
+      catch(e){ toast(errMsg(e)); b.removeAttribute("aria-busy"); }
+    });
+  });
+}
+
+/* ---------- supplier / admin board ---------- */
+let boardTimer = null;
+function renderSupplier(){
+  const isAdmin = S.session.role === "admin";
+  const dl = dayLabel(S.date);
+  $("#app").innerHTML = header(isAdmin ? "لوحة الإدارة" : "لوحة المورد", isAdmin ? [["board","طلبات الفروع"],["settings","الإعدادات"]] : null) + `
+    <div class="datebar">
+      <div class="d"><span class="faint">طلبات التوصيل ليوم</span><b>${dl.rel?dl.rel+" · ":""}${esc(dl.s)}</b></div>
+      <div class="dnav"><button class="iconbtn" aria-label="اليوم السابق" onclick="S.date=shiftDate(S.date,-1);renderSupplier()">${ICON.right}</button>
+        <button class="iconbtn" aria-label="اليوم التالي" onclick="S.date=shiftDate(S.date,1);renderSupplier()">${ICON.left}</button>
+        <button class="iconbtn" aria-label="تحديث" onclick="loadBoard(true)">${ICON.refresh}</button></div>
+    </div>
+    <div class="stats"><div><b class="num" id="s1">–</b><span>فروع طلبت من ${S.boot.branches.length}</span></div><div><b class="num" id="s2">–</b><span>طلبات جديدة</span></div><div><b class="num" id="s3">–</b><span>تم توصيلها</span></div></div>
+    <div id="miss"></div>
+    <div class="acts" style="margin-top:12px"><button class="btn primary" id="allpdf">PDF مجمّع لكل الفروع</button><button class="btn" id="tot">مجموع الكميات</button></div>
+    <div class="list" id="bl"><div class="empty">جاري التحميل…</div></div>`;
+  $("#allpdf").onclick = e => { const l = S.orders.filter(o=>o.status!=="cancelled"); if (!l.length) return toast("ما في طلبات لهذا اليوم"); downloadPdf(l, e.currentTarget, true); };
+  $("#tot").onclick = () => { const l = S.orders.filter(o=>o.status!=="cancelled"); if (!l.length) return toast("ما في طلبات لهذا اليوم");
+    modal(`<h2>مجموع الكميات</h2><div class="muted">${l.length} طلب · ${esc(dl.s)}</div>${linesTable(totals(l))}<button class="btn block" onclick="this.closest('.scrim').remove()">إغلاق</button>`); };
+  loadBoard(false);
+  clearInterval(boardTimer); boardTimer = setInterval(() => { if (S.session && S.session.role !== "branch" && S.view !== "settings" && !document.hidden) loadBoard(true); }, 60000);
+}
+function totals(list){
+  const m = new Map();
+  for (const o of list) for (const l of o.items){ const k = l.name + "|" + l.unit; m.set(k, {name:l.name, name_en:l.name_en||"", unit:l.unit, qty:(m.get(k)?.qty||0) + Number(l.qty)}); }
+  const order = new Map(S.boot.items.map((i,ix)=>[i.name, ix]));
+  return [...m.values()].sort((a,b)=>(order.get(a.name)??999)-(order.get(b.name)??999));
+}
+async function loadBoard(quiet){
+  const bl = $("#bl"); if (!bl) return;
+  try { S.orders = await rpc("veg_orders_for_date",{p_pin:S.session.pin,p_date:S.date}); }
+  catch(e){ bl.innerHTML = `<div class="empty">${errMsg(e)}</div>`; return; }
+  const live = S.orders.filter(o=>o.status!=="cancelled");
+  const ids = new Set(live.map(o=>o.branch_id));
+  $("#s1").textContent = ids.size; $("#s2").textContent = live.filter(o=>o.status==="new").length; $("#s3").textContent = live.filter(o=>o.status==="delivered").length;
+  const missing = S.boot.branches.filter(b => !ids.has(b.id));
+  $("#miss").innerHTML = missing.length && live.length ? `<div class="faint" style="margin-bottom:6px">ما طلبت بعد:</div><div class="missing">${missing.map(b=>`<span>${esc(bn(b.name))}</span>`).join("")}</div>` : "";
+  bl.innerHTML = S.orders.length ? S.orders.map(o => orderCard(o, "supplier")).join("") : `<div class="empty"><h3>ما في طلبات لهذا اليوم</h3><p>لما يرسل مدير فرع طلبه يظهر هنا مباشرة. الصفحة تتحدث كل دقيقة.</p></div>`;
+  bindCards(bl, S.orders, "supplier");
+  if (!quiet) animateIn("#bl .card");
+}
+
+/* ---------- admin settings ---------- */
+async function renderSettings(){
+  clearInterval(boardTimer);
+  $("#app").innerHTML = header("الإعدادات", [["board","طلبات الفروع"],["settings","الإعدادات"]]) + `<div id="st"><div class="empty">جاري التحميل…</div></div>`;
+  try { S.admin = await rpc("veg_admin_get",{p_pin:S.session.pin}); } catch(e){ $("#st").innerHTML = `<div class="empty">${errMsg(e)}</div>`; return; }
+  const A = S.admin; A.items = A.items.filter(i=>i.active);
+  const unitOpts = u => [...new Set([...UNITS, u])].map(x=>`<option ${x===u?"selected":""}>${esc(x)}</option>`).join("");
+  const catOpts = c => [...new Set([...CATS, c])].map(x=>`<option ${x===c?"selected":""}>${esc(x)}</option>`).join("");
+  const itemRow = (i, ix) => `<div class="ed" data-ix="${ix}"><input class="input" aria-label="اسم الصنف" value="${esc(i.name)}" data-f="name"><input class="input en" dir="ltr" aria-label="الاسم بالإنجليزي" placeholder="ENGLISH" value="${esc(i.name_en||"")}" data-f="name_en">
+    <select class="input" aria-label="الوحدة" data-f="unit">${unitOpts(i.unit)}</select>
+    <select class="input catsel" aria-label="القسم" data-f="category">${catOpts(i.category)}</select>
+    <button class="iconbtn" aria-label="حذف ${esc(i.name)}" data-del>×</button></div>`;
+  const draw = () => {
+    $("#st").innerHTML = `
+    <section class="section"><h2>الأصناف</h2><p class="faint" style="margin:0">الترتيب هنا هو نفس ترتيبها في شاشة الطلب وفي ملف PDF.</p>
+      <div style="display:flex;flex-direction:column;gap:6px" id="eds">${A.items.map(itemRow).join("")}</div>
+      <button class="btn ghost" id="add">+ إضافة صنف</button></section>
+    <section class="section"><h2>المورد</h2>
+      <div class="field"><label for="sn">اسم المورد</label><input class="input" id="sn" value="${esc(A.settings.supplier_name)}"></div>
+      <div class="field"><label for="sw">رقم واتساب المورد (مع رمز الدولة، بدون +)</label><input class="input num" id="sw" dir="ltr" inputmode="numeric" placeholder="9733XXXXXXX" value="${esc(A.settings.supplier_whatsapp)}"></div>
+      <div class="field"><label for="sp">الرقم السري للمورد</label><input class="input num" id="sp" inputmode="numeric" value="${esc(A.settings.supplier_pin)}"></div></section>
+    <section class="section"><h2>أرقام الفروع السرية</h2>
+      <div class="pins">${A.pins.map(p=>`<div class="field"><label for="p_${p.branch_id}">${esc(bn(p.name))}</label><input class="input num" id="p_${p.branch_id}" data-b="${p.branch_id}" inputmode="numeric" value="${esc(p.pin||"")}"></div>`).join("")}</div></section>
+    <section class="section"><h2>رقم الإدارة السري</h2>
+      <div class="field"><label for="ap">رقم جديد (اتركه فاضي إذا ما تبي تغيّره)</label><input class="input num" id="ap" inputmode="numeric" placeholder="••••••"></div></section>
+    <div class="bar"><div class="in"><span class="faint" id="sm">التغييرات ما تنحفظ إلا بعد الضغط على حفظ.</span><button class="btn primary" id="save">حفظ</button></div></div>`;
+    $("#eds").querySelectorAll(".ed").forEach(r => {
+      const i = A.items[r.dataset.ix];
+      r.querySelectorAll("[data-f]").forEach(f => f.oninput = () => i[f.dataset.f] = f.value);
+      $("[data-del]", r).onclick = () => { A.items.splice(r.dataset.ix, 1); draw(); };
+    });
+    $("#add").onclick = () => { A.items.push({name:"", name_en:"", unit:"كيلو", category:"خضار"}); draw(); const l = [...document.querySelectorAll('#eds [data-f="name"]')].pop(); l && l.focus(); };
+    $("#save").onclick = saveSettings;
+  };
+  draw();
+}
+async function saveSettings(){
+  const A = S.admin, b = $("#save");
+  const items = A.items.filter(i => i.name.trim()).map((i,ix) => ({id:i.id||null, name:i.name.trim(), name_en:(i.name_en||"").trim().toUpperCase(), unit:i.unit, category:i.category||"خضار", sort:(ix+1)*10}));
+  const pins = [...document.querySelectorAll("[data-b]")].map(x => ({branch_id:x.dataset.b, pin:x.value.trim()}));
+  if (pins.some(p => p.pin && p.pin.length < 4)) return $("#sm").textContent = "الرقم السري لازم يكون 4 أرقام على الأقل.";
+  const newAdmin = $("#ap").value.trim(); if (newAdmin && newAdmin.length < 6) return $("#sm").textContent = "رقم الإدارة لازم يكون 6 أرقام على الأقل.";
+  const settings = {supplier_name:$("#sn").value.trim()||"المورد", supplier_whatsapp:$("#sw").value.replace(/\D/g,""), supplier_pin:$("#sp").value.trim(), admin_pin:newAdmin};
+  b.setAttribute("aria-busy","true");
+  try {
+    S.admin = await rpc("veg_admin_save",{p_pin:S.session.pin,p_items:items,p_settings:settings,p_pins:pins});
+    if (newAdmin){ S.session.pin = newAdmin; ls.set("veg.session", S.session); }
+    S.boot = await rpc("veg_bootstrap");
+    toast("تم الحفظ"); renderSettings();
+  } catch(e){ $("#sm").textContent = errMsg(e); b.removeAttribute("aria-busy"); }
+}
+
+/* ---------- PDF ---------- */
+function pdfPage(o, i, n){
+  const dl = dayLabel(o.delivery_date), sup = (S.boot.supplier && S.boot.supplier.name) || "المورد";
+  return `<div class="pp"${i<n-1?' style="page-break-after:always"':""}>
+    <div class="ph"><div class="l"><div class="bar5"></div><b>فريج بن عاقول</b><span>أمر شراء خضروات · ${esc(sup)}</span></div>
+      <div class="po"><b>PURCHASE ORDER</b><span>#${pad(o.id)}</span></div></div>
+    <div class="meta"><div><span>الفرع</span><b>${esc(bn(o.branch_name))}</b></div><div><span>تاريخ التوصيل</span><b>${esc(dl.s)}</b></div><div><span>تاريخ الطلب</span><b>${esc(timeLabel(o.created_at))}</b></div></div>
+    <table><thead><tr><th style="text-align:center">م</th><th>الصنف</th><th style="text-align:left">ITEM</th><th>الوحدة</th><th style="text-align:center">الكمية</th><th>المستلم</th></tr></thead><tbody>
+    ${o.items.map((l,ix)=>`<tr><td class="c">${ix+1}</td><td>${esc(l.name)}</td><td class="en">${esc(l.name_en||"")}</td><td class="u">${esc(l.unit)}</td><td class="q">${fmtQty(l.qty)}</td><td class="k"></td></tr>`).join("")}
+    </tbody></table>
+    ${o.note?`<div class="note"><b>ملاحظة:</b> ${esc(o.note)}</div>`:""}
+    <div class="sig"><div>توقيع المورد</div><div>توقيع مستلم الفرع</div></div>
+    <div class="foot"><span>عدد الأصناف: ${o.items.length}</span><span>${n>1?`صفحة ${i+1} من ${n}`:"فريج بن عاقول"}</span></div></div>`;
+}
+function summaryPage(list, n){
+  const t = totals(list), dl = dayLabel(list[0].delivery_date);
+  return `<div class="pp" style="page-break-after:always">
+    <div class="ph"><div class="l"><div class="bar5"></div><b>فريج بن عاقول</b><span>ملخص طلبات الخضرة لجميع الفروع</span></div>
+      <div class="po"><b>SUMMARY</b><span>${list.length} طلب</span></div></div>
+    <div class="meta"><div><span>تاريخ التوصيل</span><b>${esc(dl.s)}</b></div><div><span>الفروع</span><b>${new Set(list.map(o=>o.branch_id)).size}</b></div><div><span>الأصناف</span><b>${t.length}</b></div></div>
+    <table><thead><tr><th style="text-align:center">م</th><th>الصنف</th><th style="text-align:left">ITEM</th><th>الوحدة</th><th style="text-align:center">المجموع</th></tr></thead><tbody>
+    ${t.map((l,ix)=>`<tr><td class="c">${ix+1}</td><td>${esc(l.name)}</td><td class="en">${esc(l.name_en||"")}</td><td class="u">${esc(l.unit)}</td><td class="q">${fmtQty(l.qty)}</td></tr>`).join("")}</tbody></table>
+    <div class="foot"><span>${list.map(o=>bn(o.branch_name)).join(" · ")}</span><span>صفحة 1 من ${n}</span></div></div>`;
+}
+async function makePdf(list, combined){
+  const host = $("#pdfHost");
+  const n = list.length + (combined ? 1 : 0);
+  host.innerHTML = (combined ? summaryPage(list, n) : "") + list.map((o,i) => pdfPage(o, i + (combined?1:0), n)).join("");
+  if (combined) host.querySelectorAll(".pp").forEach((p,i)=>{ const f=p.querySelector(".foot span:last-child"); if (f && i>0) f.textContent = `صفحة ${i+1} من ${n}`; });
+  try { await document.fonts.ready; } catch {}
+  const blob = await html2pdf().set({margin:0, image:{type:"jpeg",quality:.95},
+    html2canvas:{scale:2, useCORS:true, backgroundColor:"#ffffff"}, jsPDF:{unit:"px", format:[794,1123], orientation:"portrait", hotfixes:["px_scaling"]},
+    pagebreak:{mode:["css"]}}).from(host).outputPdf("blob");
+  host.innerHTML = "";
+  return blob;
+}
+function pdfName(list, combined){
+  const d = list[0].delivery_date;
+  return combined ? `خضرة-كل-الفروع-${d}.pdf` : `طلب-خضرة-${bn(list[0].branch_name)}-${pad(list[0].id)}.pdf`;
+}
+async function downloadPdf(list, btn, combined=false){
+  const t = btn && btn.textContent; if (btn){ btn.setAttribute("aria-busy","true"); btn.textContent = "جاري تجهيز PDF…"; }
+  try {
+    const blob = await makePdf(list, combined);
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = pdfName(list, combined);
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+  } catch(e){ toast("ما قدرنا نجهّز الملف. حاول مرة ثانية."); }
+  if (btn){ btn.removeAttribute("aria-busy"); btn.textContent = t; }
+}
+function waText(o){
+  const dl = dayLabel(o.delivery_date);
+  return `طلب خضرة · فرع ${bn(o.branch_name)}\nرقم الطلب: #${pad(o.id)}\nالتوصيل: ${dl.s}\n\n` +
+    o.items.map(l => `• ${l.name}${l.name_en?` (${l.name_en})`:""}: ${fmtQty(l.qty)} ${l.unit}`).join("\n") + (o.note ? `\n\nملاحظة: ${o.note}` : "");
+}
+async function sendWhatsApp(list, btn){
+  const o = list[0], sup = S.boot.supplier || {};
+  const t = btn && btn.textContent; if (btn){ btn.setAttribute("aria-busy","true"); btn.textContent = "جاري تجهيز PDF…"; }
+  try {
+    const blob = await makePdf(list, false);
+    const file = new File([blob], pdfName(list, false), {type:"application/pdf"});
+    if (navigator.canShare && navigator.canShare({files:[file]})){
+      try { await navigator.share({files:[file], text:waText(o)}); }
+      catch(e){ if (e && e.name !== "AbortError") throw e; }
+    } else {
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+      const url = `https://wa.me/${sup.whatsapp||""}?text=${encodeURIComponent(waText(o) + "\n\n(ملف PDF مرفق)")}`;
+      window.open(url, "_blank", "noopener");
+      toast("تم تنزيل الملف. أرفقه في محادثة الواتساب.");
+    }
+  } catch(e){ toast("ما قدرنا نجهّز الملف. حاول مرة ثانية."); }
+  if (btn){ btn.removeAttribute("aria-busy"); btn.textContent = t; }
+}
+
+/* ---------- smooth scroll ---------- */
+if (!RM && window.Lenis){
+  const lenis = new Lenis({lerp:.12, smoothWheel:true, syncTouch:false});
+  (function raf(t){ lenis.raf(t); requestAnimationFrame(raf); })(performance.now());
+}
+boot();
+</script>
+</body>
+</html>
