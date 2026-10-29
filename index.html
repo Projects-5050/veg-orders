@@ -94,10 +94,17 @@ textarea.input{height:auto;min-height:70px;padding:10px 12px;resize:vertical}
 .search{position:relative;margin-bottom:6px}
 .search input{padding-inline-start:38px}
 .search svg{position:absolute;inset-inline-start:12px;top:14px;width:18px;height:18px;color:var(--ink-3)}
-.cat{font-family:var(--display);font-weight:700;font-size:13px;color:var(--red);padding:18px 0 6px;border-bottom:2px solid var(--line-strong)}
-.row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
-.row.on .nm{font-weight:600}
-.row.on{background:linear-gradient(to right,var(--red-soft),transparent 60%)}
+.cat{font-family:var(--display);font-weight:700;font-size:13px;color:var(--red);padding:18px 0 0}
+.row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 84px auto;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.row:nth-child(even of .row){background:var(--sheet)}
+.rh{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 84px 136px;gap:12px;padding:10px 12px;background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;margin-top:8px}
+.rh .q{text-align:center}
+.row .ar{direction:rtl;text-align:right;font-family:"IBM Plex Sans Arabic",sans-serif;color:var(--ink-2);font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .ut{font-size:14px;color:var(--ink-2)}
+@media (max-width:560px){.row,.rh{grid-template-columns:minmax(0,1fr) 64px auto;gap:8px;padding-inline:8px}.rh{grid-template-columns:minmax(0,1fr) 64px 128px}.row .ar,.rh .ar{display:none}.row .nm-ar{display:block}}
+.nm-ar{display:none;direction:rtl;text-align:left;font-size:12px;color:var(--ink-3);font-family:"IBM Plex Sans Arabic",sans-serif}
+.row.on .nm{font-weight:700}
+.row.on,.row.on:nth-child(even of .row){background:var(--red-soft)}
 .nm{font-size:16px} .un{font-size:12px;color:var(--ink-3)}
 .step{display:flex;align-items:center;gap:4px}
 .step button{width:40px;height:40px;border-radius:var(--r);border:1.5px solid var(--line);background:transparent;font-size:20px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
@@ -446,10 +453,12 @@ function setDelivery(n){
 function drawRows(first){
   const items = S.boot.items.filter(i => (S.cat===ALL || i.category===S.cat) && (!S.q || i.name.includes(S.q) || (i.name_en||"").toLowerCase().includes(S.q.toLowerCase())));
   let html = "", lastCat = null;
+  const RH = `<div class="rh" aria-hidden="true"><span>Item</span><span class="ar" style="text-align:right">Arabic</span><span>Unit</span><span class="q">Qty</span></div>`;
   for (const i of items){
-    if (S.cat===ALL && !S.q && i.category !== lastCat){ html += `<div class="cat">${esc(ce(i.category))}</div>`; lastCat = i.category; }
+    if (S.cat===ALL && !S.q && i.category !== lastCat){ html += `<div class="cat">${esc(ce(i.category))}</div>${RH}`; lastCat = i.category; }
+    else if (!html) html += RH;
     const q = S.qty[i.id] || 0;
-    html += `<div class="row ${q>0?"on":""}" data-id="${i.id}"><div><div class="nm">${esc(iname(i))}</div><div class="un">${esc(ue(i.unit))}${i.name_en?` · <bdi dir="rtl">${esc(i.name)}</bdi>`:""}</div></div>
+    html += `<div class="row ${q>0?"on":""}" data-id="${i.id}"><div><div class="nm">${esc(iname(i))}</div>${i.name_en?`<div class="nm-ar">${esc(i.name)}</div>`:""}</div><div class="ar">${i.name_en?esc(i.name):""}</div><div class="ut">${esc(ue(i.unit))}</div>
       <div class="step"><button class="minus" aria-label="Decrease ${esc(iname(i))}">−</button>
       <input inputmode="decimal" class="num" aria-label="Quantity of ${esc(iname(i))}" value="${q?fmtQty(q):""}" placeholder="0">
       <button class="plus" aria-label="Increase ${esc(iname(i))}">+</button></div></div>`;
