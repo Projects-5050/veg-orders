@@ -172,10 +172,18 @@ table.rt td{white-space:nowrap}
 .linkbtn{background:none;border:0;padding:6px 0;color:var(--ink-2);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:4px;align-self:center}
 .linkbtn:hover{color:var(--red)}
 .code{font-family:var(--display);font-size:22px;letter-spacing:.12em;direction:ltr;text-align:center;border:2px dashed var(--line-strong);border-radius:var(--r);padding:12px;user-select:all}
+.tsel{position:relative;flex:none;width:26px;height:26px;cursor:pointer;margin-inline-end:4px;align-self:center}
+.tsel input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+.tsel span{position:absolute;inset:0;border:2px solid var(--line-strong);border-radius:6px;display:flex;align-items:center;justify-content:center;color:transparent;font-weight:700;font-size:15px;background:var(--paper)}
+.tsel input:checked + span{background:var(--red);border-color:var(--red);color:var(--red-ink)}
+.tsel input:focus-visible + span{outline:2px solid var(--red);outline-offset:2px}
+.tile.unsel{opacity:.55}
+.tile .th h3{flex:1;min-width:0}
+.mtag{font-size:11px;font-weight:600;color:var(--red);background:var(--red-soft);border-radius:999px;padding:2px 8px;white-space:nowrap}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
 .tile{border:1.5px solid var(--line-strong);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:8px;cursor:pointer;background:var(--paper);transition:background .2s}
 .tile:hover{background:var(--sheet)}
-.tile .th{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.tile .th{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .tile .tq{font-size:14px;color:var(--ink-2)} .tile .tq b{font-family:var(--display);font-size:22px;color:var(--ink);margin-inline-end:4px}
 .tile .tu{display:block;font-size:13px;color:var(--ink)}
 .tile .tn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -222,6 +230,7 @@ table.rt td{white-space:nowrap}
 .pp td.ar{direction:rtl;text-align:right;font-family:"IBM Plex Sans Arabic",sans-serif;color:#5E5B57;font-size:14px}
 .pp .note{margin-top:16px;border:1.5px dashed #8E8A85;padding:10px 12px;font-size:14px}
 .pp .rcv{margin-top:14px;font-size:14px;color:#1F7A45;border:1.5px solid #1F7A45;padding:8px 12px}
+.pp .pbranch{font-family:var(--display);font-size:30px;font-weight:800;margin:16px 0 -4px;color:#141414}
 .pp .sig{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:48px;font-size:13px;color:#5E5B57}
 .pp .sig div{border-top:1.5px solid #141414;padding-top:6px}
 .pp .foot{position:absolute;bottom:28px;right:52px;left:52px;display:flex;justify-content:space-between;font-size:11px;color:#8E8A85;border-top:1px solid #E6E3DF;padding-top:8px}
@@ -354,7 +363,8 @@ const S = {
   boot:null, session: ls.get("veg.session"), view:"order",
   qty:{}, note:"", delivery: bhDate(1), cat:ALL, q:"",
   history:[], date: bhDate(1), orders:[], admin:null,
-  arch:{month: bhDate(0).slice(0,7), branch:"", mode:"orders", data:null, key:""}
+  arch:{month: bhDate(0).slice(0,7), branch:"", mode:"orders", data:null, key:""},
+  sel:new Set(), selDate:null, known:new Set()
 };
 
 function animateIn(sel){
@@ -378,6 +388,7 @@ async function boot(){
   route();
 }
 function route(){
+  const sb = document.getElementById("selbar"); if (sb && !(S.session && S.session.role === "admin" && S.view === "board")) sb.remove();
   if (!S.session) return renderLogin();
   if (S.view === "search" && S.session.role === "admin") { clearInterval(boardTimer); return renderSearch(); }
   if (S.view === "archive" && S.session.role !== "branch") { clearInterval(boardTimer); return renderArchive(); }
@@ -637,10 +648,10 @@ function renderSupplier(){
     </div>
     <div class="stats"><div><b class="num" id="s1">–</b><span>of ${S.boot.branches.length} branches ordered</span></div><div><b class="num" id="s2">–</b><span>Awaiting receipt</span></div><div><b class="num" id="s3">–</b><span>Received</span></div></div>
     <div id="miss"></div>
-    <div class="acts" style="margin-top:12px"><button class="btn primary" id="allpdf">Combined PDF, all branches</button><button class="btn" id="tot">Quantity totals</button>${isAdmin?`<button class="btn dark" onclick="S.view='search';route()">Search orders</button>`:""}</div>
+    <div class="acts" style="margin-top:12px">${isAdmin?"":`<button class="btn primary" id="allpdf">Combined PDF, all branches</button>`}<button class="btn" id="tot">Quantity totals</button>${isAdmin?`<button class="btn dark" onclick="S.view='search';route()">Search orders</button>`:""}</div>
     <div class="acts" id="arch" style="margin-top:8px;align-items:center"></div>
     <div class="list" id="bl"><div class="empty">Loading…</div></div>`;
-  $("#allpdf").onclick = e => { const l = S.orders.filter(o=>o.status!=="cancelled"); if (!l.length) return toast("No orders for this day"); downloadPdf(l, e.currentTarget, true); };
+  if (!isAdmin) $("#allpdf").onclick = e => { const l = S.orders.filter(o=>o.status!=="cancelled"); if (!l.length) return toast("No orders for this day"); downloadPdf(l, e.currentTarget, true); };
   $("#tot").onclick = () => { const l = S.orders.filter(o=>o.status!=="cancelled"); if (!l.length) return toast("No orders for this day");
     modal(`<h2>Quantity totals</h2><div class="muted">${l.length} ${l.length===1?"order":"orders"} · ${esc(dl.s)}</div>${linesTable(totals(l))}<button class="btn block" onclick="this.closest('.scrim').remove()">Close</button>`); };
   loadBoard(false);
@@ -673,16 +684,22 @@ async function loadBoard(quiet){
   $("#miss").innerHTML = "";
   if (!live.length && archived.length){ bl.innerHTML = `<div class="empty"><h3>All orders for this day are archived</h3><p>Open the Archive tab to see them, export them, or bring one back.</p></div>`; return; }
   if (!live.length){ bl.innerHTML = `<div class="empty"><h3>No orders for this day</h3><p>When a branch manager sends an order it shows here right away. This page refreshes every minute.</p></div>`; return; }
+  const isAdmin = S.session.role === "admin";
+  if (isAdmin && S.selDate !== S.date){ S.sel = new Set(live.map(o => o.id)); S.selDate = S.date; }
+  if (isAdmin){ const ok = new Set(live.map(o=>o.id)); S.sel = new Set([...S.sel].filter(id => ok.has(id))); live.forEach(o => { if (!S.known.has(o.id)){ S.known.add(o.id); S.sel.add(o.id); } }); }
   const tile = o => {
     const st = o.status;
     const foot = st === "new" ? `<button class="tbtn" data-recv="${o.id}">Mark received</button>`
       : `<div class="tstamp"><b>✓ ${st==="delivered"?"Delivered":"Received"}</b><span class="num">${esc(stampLabel(st==="delivered"?o.delivered_at:o.received_at))}</span></div>`;
     return `<article class="tile ${st}" data-open="${o.id}" tabindex="0" aria-label="${esc(bn(o.branch_name))}">
-      <div class="th"><h3>${esc(bn(o.branch_name))}</h3><span class="faint">${onum(o.id)}</span></div>
+      <div class="th">${isAdmin?`<label class="tsel" data-sel-wrap><input type="checkbox" data-sel="${o.id}" ${S.sel.has(o.id)?"checked":""} aria-label="Include ${esc(bn(o.branch_name))} ${pad(o.id)} in the PDF"><span aria-hidden="true">✓</span></label>`:""}<h3>${esc(bn(o.branch_name))}</h3><span class="faint">${onum(o.id)}</span></div>
+      ${multi.has(o.branch_id)?`<div><span class="mtag">${multi.get(o.branch_id)} orders today · one page in the PDF</span></div>`:""}
       <div class="tq"><b class="num">${o.items.length}</b> ${o.items.length===1?"item":"items"}<span class="tu num">${esc(unitTotals(o.items))}</span></div>
       ${o.note?`<div class="faint tn">Note: ${esc(o.note)}</div>`:""}
       ${foot}</article>`;
   };
+  const cnt = new Map(); live.forEach(o => cnt.set(o.branch_id, (cnt.get(o.branch_id)||0) + 1));
+  const multi = new Map([...cnt].filter(([,c]) => c > 1));
   bl.innerHTML = `<div class="tiles">${live.map(tile).join("")}${missing.map(b=>`<article class="tile none"><div class="th"><h3>${esc(bn(b.name))}</h3></div><div class="faint">No order for this day</div></article>`).join("")}</div>`;
   bl.querySelectorAll("[data-recv]").forEach(btn => btn.onclick = async e => {
     e.stopPropagation(); btn.setAttribute("aria-busy","true"); btn.textContent = "Saving…";
@@ -698,7 +715,24 @@ async function loadBoard(quiet){
       bindCards(m, [o], "supplier", () => { m.remove(); loadBoard(true); }); };
     t.onclick = open; t.onkeydown = e => { if (e.key === "Enter" && e.target === t) open(); };
   });
+  if (isAdmin){
+    bl.querySelectorAll("[data-sel-wrap]").forEach(w => w.addEventListener("click", e => e.stopPropagation()));
+    bl.querySelectorAll("[data-sel]").forEach(cb => cb.onchange = () => { const id = Number(cb.dataset.sel); cb.checked ? S.sel.add(id) : S.sel.delete(id); cb.closest(".tile").classList.toggle("unsel", !cb.checked); drawSelBar(live); });
+    bl.querySelectorAll("[data-sel]").forEach(cb => cb.closest(".tile").classList.toggle("unsel", !cb.checked));
+    drawSelBar(live);
+  }
   if (!quiet) animateIn("#bl .tile");
+}
+function drawSelBar(live){
+  let bar = $("#selbar");
+  if (!bar){ bar = document.createElement("div"); bar.id = "selbar"; bar.className = "bar"; document.body.appendChild(bar); }
+  const picked = live.filter(o => S.sel.has(o.id));
+  const branches = new Set(picked.map(o => o.branch_id)).size;
+  const merged = picked.length - branches;
+  bar.innerHTML = `<div class="in"><div class="count"><b class="num">${branches}</b><span class="faint">${branches===1?"branch":"branches"} in the PDF${merged?` · ${merged} same-day ${merged===1?"order":"orders"} merged`:""}</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn ghost" id="selall">${picked.length===live.length?"Clear":"Select all"}</button><button class="btn primary" id="selpdf">One PDF for selected</button></div></div>`;
+  $("#selall").onclick = () => { if (picked.length === live.length) S.sel.clear(); else live.forEach(o => S.sel.add(o.id)); loadBoard(true); };
+  $("#selpdf").onclick = e => { if (!picked.length) return toast("Select at least one branch"); downloadPdf(picked, e.currentTarget, true); };
 }
 
 /* ---------- archive, monthly summary & Excel ---------- */
@@ -1016,12 +1050,33 @@ async function saveSettings(){
 }
 
 /* ---------- PDF ---------- */
+function mergeByBranchDay(list){
+  const g = new Map();
+  for (const o of list){
+    const k = o.branch_id + "|" + o.delivery_date;
+    if (!g.has(k)) g.set(k, []);
+    g.get(k).push(o);
+  }
+  const order = new Map(S.boot.items.map((i,ix)=>[i.name, ix]));
+  return [...g.values()].map(os => {
+    if (os.length === 1) return os[0];
+    os = [...os].sort((a,b) => a.id - b.id);
+    const m = new Map();
+    for (const o of os) for (const l of o.items){ const k = l.name + "|" + l.unit; const p = m.get(k); m.set(k, {...l, qty:(p ? p.qty : 0) + Number(l.qty)}); }
+    const notes = os.filter(o => o.note).map(o => `#${pad(o.id)}: ${o.note}`);
+    const rec = os.every(o => o.received_at) ? os.map(o => o.received_at).sort().pop() : null;
+    const del = os.every(o => o.delivered_at) ? os.map(o => o.delivered_at).sort().pop() : null;
+    return {...os[0], ids:os.map(o => o.id), items:[...m.values()].sort((a,b)=>(order.get(a.name)??999)-(order.get(b.name)??999)),
+      note:notes.join("  ·  ") || null, created_at:os[0].created_at, received_at:rec, delivered_at:del};
+  }).sort((a,b) => a.delivery_date.localeCompare(b.delivery_date) || bn(a.branch_name).localeCompare(bn(b.branch_name)));
+}
 function pdfPage(o, i, n){
   const dl = dayLabel(o.delivery_date), sup = (S.boot.supplier && S.boot.supplier.name) || "Supplier";
   return `<div class="pp"${i<n-1?' style="page-break-after:always"':""}>
     <div class="ph"><div class="l"><div class="bar5"></div><img class="plogo" src="${LOGO}" alt="Fareeq Bin Aqool"><span>Vegetable purchase order · ${esc(sup)}</span></div>
-      <div class="po"><b>PURCHASE ORDER</b><span>#${pad(o.id)}</span></div></div>
-    <div class="meta"><div><span>Branch</span><b>${esc(bn(o.branch_name))}</b></div><div><span>Delivery date</span><b>${esc(dl.s)}</b></div><div><span>Order date</span><b>${esc(timeLabel(o.created_at))}</b></div></div>
+      <div class="po"><b>PURCHASE ORDER</b><span>${o.ids ? o.ids.map(x=>"#"+pad(x)).join(" + ") : "#"+pad(o.id)}</span></div></div>
+    <div class="pbranch">${esc(bn(o.branch_name))}</div>
+    <div class="meta"><div><span>Branch</span><b>${esc(bn(o.branch_name))}</b></div><div><span>Delivery date</span><b>${esc(dl.s)}</b></div><div><span>${o.ids ? "Orders merged" : "Order date"}</span><b>${o.ids ? `${o.ids.length} orders, same day` : esc(timeLabel(o.created_at))}</b></div></div>
     <table><thead><tr><th style="text-align:center">#</th><th>Item</th><th>Unit</th><th style="text-align:center">Qty</th><th>Received</th></tr></thead><tbody>
     ${o.items.map((l,ix)=>`<tr><td class="c">${ix+1}</td><td class="en">${esc(l.name_en||l.name)}</td><td class="u">${esc(ue(l.unit))}</td><td class="q">${fmtQty(l.qty)}</td><td class="k"></td></tr>`).join("")}
     </tbody></table>
@@ -1038,12 +1093,13 @@ function summaryPage(list, n){
     <div class="meta"><div><span>Delivery date</span><b>${esc(dl.s)}</b></div><div><span>Branches</span><b>${new Set(list.map(o=>o.branch_id)).size}</b></div><div><span>Items</span><b>${t.length}</b></div></div>
     <table><thead><tr><th style="text-align:center">#</th><th>Item</th><th>Unit</th><th style="text-align:center">Total</th></tr></thead><tbody>
     ${t.map((l,ix)=>`<tr><td class="c">${ix+1}</td><td class="en">${esc(l.name_en||l.name)}</td><td class="u">${esc(ue(l.unit))}</td><td class="q">${fmtQty(l.qty)}</td></tr>`).join("")}</tbody></table>
-    <div class="foot"><span>${list.map(o=>bn(o.branch_name)).join(" · ")}</span><span>Page 1 of ${n}</span></div></div>`;
+    <div class="foot"><span>${[...new Set(list.map(o=>bn(o.branch_name)))].join(" · ")}</span><span>Page 1 of ${n}</span></div></div>`;
 }
 async function makePdf(list, combined){
   const host = $("#pdfHost");
-  const n = list.length + (combined ? 1 : 0);
-  host.innerHTML = (combined ? summaryPage(list, n) : "") + list.map((o,i) => pdfPage(o, i + (combined?1:0), n)).join("");
+  const pages = combined ? mergeByBranchDay(list) : list;
+  const n = pages.length + (combined ? 1 : 0);
+  host.innerHTML = (combined ? summaryPage(list, n) : "") + pages.map((o,i) => pdfPage(o, i + (combined?1:0), n)).join("");
   if (combined) host.querySelectorAll(".pp").forEach((p,i)=>{ const f=p.querySelector(".foot span:last-child"); if (f && i>0) f.textContent = `Page ${i+1} of ${n}`; });
   // Render from the HTML itself, not from the off-screen host: the host's off-screen
   // position was carried into the copy html2pdf captures, which produced blank pages.
@@ -1095,8 +1151,9 @@ async function sendWhatsApp(list, btn){
 }
 
 function showPdfPreview(list, combined, wa){
-  const n = list.length + (combined ? 1 : 0);
-  const pages = (combined ? summaryPage(list, n) : "") + list.map((o,i) => pdfPage(o, i + (combined?1:0), n)).join("");
+  const pl = combined ? mergeByBranchDay(list) : list;
+  const n = pl.length + (combined ? 1 : 0);
+  const pages = (combined ? summaryPage(list, n) : "") + pl.map((o,i) => pdfPage(o, i + (combined?1:0), n)).join("");
   const m = modal(`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2>Purchase order preview</h2><button class="btn sm" id="pc">Close</button></div>
     <p class="faint" style="margin:0">${wa ? "In the live app, WhatsApp opens with this file and the order text." : "In the live app, this PDF file is downloaded."}</p>
     <div id="pv" style="display:flex;flex-direction:column;gap:12px;align-items:center"></div>
