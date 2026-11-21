@@ -238,8 +238,32 @@ table.rt td{white-space:nowrap}
 .pp .foot{position:absolute;bottom:28px;right:52px;left:52px;display:flex;justify-content:space-between;font-size:11px;color:#8E8A85;border-top:1px solid #E6E3DF;padding-top:8px}
 .pp .bar5{height:6px;background:#C8102E;width:72px;margin-bottom:10px}
 .archbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
-.seg2{display:inline-grid;grid-template-columns:repeat(2,auto)}
+.seg2{display:inline-grid;grid-auto-flow:column;grid-auto-columns:auto}
+.btn.del{color:var(--red);border-color:var(--red)}
+.btn.del:hover{background:var(--red-soft)}
 .seg2 button{padding:9px 16px}
+.crumbs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-block:16px 6px;font-family:var(--display);font-size:18px}
+.crumbs>span[aria-hidden]{color:var(--ink-3)}
+.crumb{background:none;border:0;padding:4px 2px;font:inherit;font-weight:700;color:var(--ink-2);border-radius:4px}
+.crumb:hover{color:var(--red)} .crumb.on{color:var(--ink)}
+button.crumb.on{text-decoration:underline;text-decoration-color:var(--red);text-decoration-thickness:3px;text-underline-offset:6px}
+.crumb-y{display:inline-flex;align-items:center;gap:4px} .crumb-y b{font-weight:700}
+.iconbtn.sm{width:28px;height:28px} .iconbtn.sm svg{width:14px;height:14px} .iconbtn:disabled{opacity:.35;cursor:default}
+.crumbs #abr{margin-inline-start:auto;height:38px;width:auto;min-width:140px;font-family:var(--body);font-size:14px}
+.mchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-block:6px 14px}
+.mchip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:6px 12px;font-weight:600;font-size:13px;white-space:nowrap}
+.mchip span{font-size:11px;background:var(--sheet);border-radius:999px;padding:0 6px;color:var(--ink-2)}
+.mchip.on{background:var(--ink);border-color:var(--ink);color:var(--paper)} .mchip.on span{background:var(--red);color:var(--red-ink)}
+.mchip:disabled{opacity:.35;cursor:default}
+.fstats{padding-block:12px 10px}
+.folders{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.folder{position:relative;text-align:start;display:flex;flex-direction:column;gap:3px;border:1.5px solid var(--line-strong);border-radius:0 var(--r) var(--r) var(--r);background:var(--paper);padding:14px;margin-top:8px;cursor:pointer}
+.folder::before{content:"";position:absolute;top:-9px;left:-1.5px;width:46%;height:9px;border:1.5px solid var(--line-strong);border-bottom:0;border-radius:6px 6px 0 0;background:var(--paper)}
+.folder:hover,.folder:hover::before{background:var(--sheet)}
+.folder .ficon{color:var(--red);width:22px;height:22px} .folder .ficon svg{width:22px;height:22px}
+.folder b{font-family:var(--display);font-size:16px}
+.folder .fbr{font-size:12px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:480px){.crumbs #abr{margin-inline-start:0;width:100%}}
 .aday{padding-block:14px 6px}
 .at{table-layout:fixed;min-width:640px}
 .adh{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
@@ -335,6 +359,8 @@ function errMsg(e){
   const m = String(e && e.message || e);
   if (m.includes("unauthorized")) return "Incorrect PIN.";
   if (m.includes("empty")) return "Add a quantity for at least one item.";
+  if (m.includes("reason_required")) return "Write the reason for deleting (at least 3 letters).";
+  if (m.includes("not_found")) return "This order was already deleted.";
   if (m.includes("pin_taken")) return "This PIN is already used by another account. Choose a different one.";
   if (m.includes("pin_short")) return "PIN too short. Branches and supplier need at least 4 digits, admin needs 6.";
   if (m.includes("pin_digits")) return "The PIN must contain digits only.";
@@ -365,7 +391,7 @@ const S = {
   boot:null, session: ls.get("veg.session"), view:"order",
   qty:{}, note:"", delivery: bhDate(1), cat:ALL, q:"",
   history:[], date: bhDate(1), orders:[], admin:null,
-  arch:{month: bhDate(0).slice(0,7), branch:"", mode:"orders", data:null, key:""},
+  arch:{month: bhDate(0).slice(0,7), branch:"", mode:"orders", day:null, year:null, ykey:""},
   sel:new Set(), selDate:null, known:new Set()
 };
 
@@ -459,8 +485,8 @@ function header(sub, tabs){
 function tabsFor(){
   const r = S.session.role;
   if (r === "branch") return [["order","New order"],["history","My orders"]];
-  if (r === "admin") return [["board","Branch orders"],["archive","Archive"],["search","Search"],["settings","Settings"]];
-  return [["board","Orders"],["archive","Archive"]];
+  if (r === "admin") return [["board","Branch orders"],["archive","Folders"],["search","Search"],["settings","Settings"]];
+  return [["board","Orders"],["archive","Folders"]];
 }
 function saveDraft(){ if (S.session && S.session.branch) ls.set("veg.draft." + S.session.branch, {qty:S.qty, note:S.note}); }
 function selectedLines(){
@@ -590,12 +616,13 @@ function orderCard(o, mode){
   let acts = "";
   if (o.status !== "cancelled"){
     acts += `<button class="btn sm" data-a="pdf">PDF</button>`;
-    if (mode === "branch"){ acts += `<button class="btn sm" data-a="wa">WhatsApp</button>`; if (o.status === "new") acts += `<button class="btn sm ghost" data-a="cancel">Cancel</button>`; }
+    if (mode === "branch"){ acts += `<button class="btn sm" data-a="wa">WhatsApp</button>`; if (o.status === "new") acts += `<button class="btn sm ghost del" data-a="delete">Delete</button>`; }
     else { if (o.status === "new") acts += `<button class="btn sm primary" data-a="received">Mark received</button>`;
            if (o.status === "received") acts += `<button class="btn sm dark" data-a="delivered">Mark delivered</button>`;
            if (o.status !== "new" && !o.archived_at) acts += `<button class="btn sm ghost" data-a="new">Undo receipt</button>`;
            if (o.status !== "new") acts += o.archived_at ? `<button class="btn sm" data-a="unarchive">Move back to board</button>` : `<button class="btn sm" data-a="archive">Archive</button>`; }
   }
+  if (mode !== "branch" && S.session && S.session.role === "admin") acts += `<button class="btn sm ghost del" data-a="delete">Delete</button>`;
   return `<article class="card ${o.status==="new"?"new":""}" data-id="${o.id}">
     <div class="h"><div><h3>${head}</h3><div class="faint">${sub} · ${o.items.length} ${o.items.length===1?"item":"items"}</div></div><span style="display:flex;gap:6px;flex-wrap:wrap">${o.archived_at?`<span class="pill archived">Archived</span>`:""}<span class="pill ${o.status}">${STATUS[o.status]}</span></span></div>
     ${o.status!=="cancelled"?`<details${mode!=="branch"?" open":""}><summary class="faint" style="cursor:pointer">Items</summary>${linesTable(o.items)}</details>`:""}
@@ -611,6 +638,7 @@ function bindCards(root, list, mode, onDone){
       const a = b.dataset.a;
       if (a === "pdf") return downloadPdf([o], b);
       if (a === "wa") return sendWhatsApp([o], b);
+      if (a === "delete") return openDelete(o);
       if (a === "cancel"){
         if (b.dataset.sure !== "1"){ b.dataset.sure = "1"; b.textContent = "Sure? Tap to cancel"; b.classList.add("primary"); return; }
         try { await rpc("veg_cancel_order",{p_branch:S.session.branch,p_pin:S.session.pin,p_id:o.id}); toast("Order cancelled"); renderHistory(); }
@@ -634,6 +662,34 @@ function bindCards(root, list, mode, onDone){
       catch(e){ toast(errMsg(e)); b.removeAttribute("aria-busy"); }
     });
   });
+}
+
+function openDelete(o){
+  const reasons = ["Duplicate order","Wrong quantities","Wrong delivery day","Not needed anymore"];
+  const m = modal(`<h2>Delete order ${onum(o.id)}?</h2>
+    <p class="muted" style="margin:0">${esc(bn(o.branch_name))} · delivery ${esc(dayLabel(o.delivery_date).s)} · ${o.items.length} ${o.items.length===1?"item":"items"}. It leaves the board, folders and PDFs for good. The reason is kept in the deletion log.</p>
+    <form id="df" style="display:flex;flex-direction:column;gap:10px" novalidate>
+      <div class="field"><label for="dr">Reason for deleting</label><textarea class="input" id="dr" maxlength="300" placeholder="Duplicate order"></textarea></div>
+      <div class="chips" style="position:static;padding:0;flex-wrap:wrap">${reasons.map(r=>`<button type="button" class="chip" data-r="${esc(r)}">${esc(r)}</button>`).join("")}</div>
+      <div class="err" id="de" role="alert"></div>
+      <div style="display:flex;gap:8px"><button type="button" class="btn ghost" id="dx">Keep order</button><button class="btn primary" style="flex:1" id="dgo">Delete order</button></div></form>`);
+  const ta = $("#dr", m);
+  m.querySelectorAll("[data-r]").forEach(c => c.onclick = () => { ta.value = c.dataset.r; $("#de", m).textContent = ""; ta.focus(); });
+  ta.addEventListener("input", () => $("#de", m).textContent = "");
+  $("#dx", m).onclick = () => m.remove();
+  $("#df", m).onsubmit = async e => { e.preventDefault();
+    const why = ta.value.trim(); if (why.length < 3) return $("#de", m).textContent = "Write the reason for deleting (at least 3 letters).";
+    const b = $("#dgo", m); b.setAttribute("aria-busy","true");
+    try {
+      await rpc("veg_delete_order",{p_pin:S.session.pin,p_branch:S.session.role==="branch"?S.session.branch:null,p_id:o.id,p_reason:why});
+      document.querySelectorAll(".scrim").forEach(x => x.remove());
+      toast(`Order #${pad(o.id)} deleted`);
+      if (S.session.role === "branch") renderHistory();
+      else if (S.view === "archive") loadYear(true).then(() => drawArchive());
+      else if (S.view === "search") runSearch();
+      else loadBoard(true);
+    } catch(err){ $("#de", m).textContent = errMsg(err); b.removeAttribute("aria-busy"); }
+  };
 }
 
 /* ---------- supplier / admin board ---------- */
@@ -675,7 +731,7 @@ async function loadBoard(quiet){
   $("#s1").textContent = ids.size; $("#s2").textContent = all.filter(o=>o.status==="new").length; $("#s3").textContent = all.filter(o=>o.status!=="new").length;
   const done = live.filter(o=>o.status!=="new");
   $("#arch").innerHTML = (done.length ? `<button class="btn" id="archall">${ICON.box}Archive received (${done.length})</button>` : "")
-    + (archived.length ? `<button class="linkbtn" onclick="S.arch.month=S.date.slice(0,7);S.view='archive';route()">${archived.length} archived for this day · view in Archive</button>` : "");
+    + (archived.length ? `<button class="linkbtn" onclick="S.arch.month=S.date.slice(0,7);S.arch.day=S.date;S.arch.mode='orders';S.view='archive';route()">${archived.length} archived for this day · open its folder</button>` : "");
   const ab = $("#archall"); if (ab) ab.onclick = async () => {
     if (ab.dataset.sure !== "1"){ ab.dataset.sure = "1"; ab.innerHTML = `${ICON.box}Sure? Tap to archive ${done.length}`; ab.classList.add("primary"); return; }
     ab.setAttribute("aria-busy","true");
@@ -741,58 +797,99 @@ function drawSelBar(live){
 function monthRange(m){ const [y,mo] = m.split("-").map(Number); const last = new Date(Date.UTC(y, mo, 0)).getUTCDate(); return {from:`${m}-01`, to:`${m}-${String(last).padStart(2,"0")}`}; }
 function monthLabel(m){ return new Intl.DateTimeFormat("en-GB",{month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(m+"-15T12:00:00Z")); }
 function shiftMonth(m, n){ const [y,mo] = m.split("-").map(Number); const d = new Date(Date.UTC(y, mo-1+n, 1)); return d.toISOString().slice(0,7); }
-async function loadArchive(force){
-  const A = S.arch, key = A.month + "|" + A.branch;
-  if (!force && A.data && A.key === key) return A.data;
-  const r = monthRange(A.month);
-  A.data = await rpc("veg_orders_range",{p_pin:S.session.pin,p_from:r.from,p_to:r.to,p_branch:A.branch||null}); A.key = key;
-  return A.data;
+async function loadYear(force){
+  const A = S.arch, y = A.month.slice(0,4), key = y + "|" + A.branch;
+  if (!force && A.year && A.ykey === key) return A.year;
+  A.year = await rpc("veg_orders_range",{p_pin:S.session.pin,p_from:`${y}-01-01`,p_to:`${y}-12-31`,p_branch:A.branch||null}); A.ykey = key;
+  return A.year;
 }
+async function loadArchive(force){
+  const all = await loadYear(force);
+  return all.filter(o => o.delivery_date.slice(0,7) === S.arch.month);
+}
+function shortMonth(m){ return new Intl.DateTimeFormat("en-GB",{month:"short",timeZone:"UTC"}).format(new Date(m+"-15T12:00:00Z")); }
+function dayShort(d){ return new Intl.DateTimeFormat("en-GB",{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"}).format(new Date(d+"T12:00:00Z")); }
+const FOLDER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
 function renderArchive(){
-  const A = S.arch, cur = bhDate(0).slice(0,7);
-  $("#app").innerHTML = header("Archive", tabsFor()) + `
-    <div class="datebar">
-      <div class="d"><span class="faint">Deliveries in</span><b>${esc(monthLabel(A.month))}</b></div>
-      <div class="dnav"><button class="iconbtn" aria-label="Previous month" id="mprev">${ICON.left}</button>
-        <button class="iconbtn" aria-label="Next month" id="mnext" ${A.month>=cur?"disabled":""}>${ICON.right}</button>
-        <select class="input" id="abr" aria-label="Branch" style="height:38px;width:auto;min-width:140px"><option value="">All branches</option>${S.boot.branches.map(b=>`<option value="${b.id}" ${A.branch===b.id?"selected":""}>${esc(bn(b.name))}</option>`).join("")}</select></div>
-    </div>
-    <div class="stats"><div><b class="num" id="a1">–</b><span>Archived orders</span></div><div><b class="num" id="a2">–</b><span>All orders this month</span></div><div><b class="num" id="a3">–</b><span>Branches ordered</span></div></div>
+  const A = S.arch, cur = bhDate(0).slice(0,7), y = A.month.slice(0,4);
+  if (A.month > cur) A.month = cur;
+  $("#app").innerHTML = header("Monthly folders", tabsFor()) + `
+    <nav class="crumbs" aria-label="Folder path">
+      <button type="button" class="crumb" id="cr0">Orders</button><span aria-hidden="true">›</span>
+      <span class="crumb-y"><button type="button" class="iconbtn sm" id="yprev" aria-label="Previous year">${ICON.left}</button><b class="num">${y}</b><button type="button" class="iconbtn sm" id="ynext" aria-label="Next year" ${y>=cur.slice(0,4)?"disabled":""}>${ICON.right}</button></span><span aria-hidden="true">›</span>
+      <button type="button" class="crumb ${A.day?"":"on"}" id="cr2">${esc(monthLabel(A.month).split(" ")[0])}</button>
+      ${A.day?`<span aria-hidden="true">›</span><span class="crumb on">${esc(dayShort(A.day))}</span>`:""}
+      <select class="input" id="abr" aria-label="Branch"><option value="">All branches</option>${S.boot.branches.map(b=>`<option value="${b.id}" ${A.branch===b.id?"selected":""}>${esc(bn(b.name))}</option>`).join("")}</select>
+    </nav>
+    <div class="mchips" id="mchips" role="group" aria-label="Months"></div>
     <div class="archbar">
-      <div class="seg seg2" role="group" aria-label="View"><button type="button" data-m="orders" aria-pressed="${A.mode==="orders"}">Archived orders</button><button type="button" data-m="summary" aria-pressed="${A.mode==="summary"}">Monthly summary</button></div>
+      <div class="seg seg2" role="group" aria-label="View"><button type="button" data-m="orders" aria-pressed="${A.mode!=="summary"&&A.mode!=="deleted"}">Folders</button><button type="button" data-m="summary" aria-pressed="${A.mode==="summary"}">Monthly summary</button>${S.session.role==="admin"?`<button type="button" data-m="deleted" aria-pressed="${A.mode==="deleted"}">Deleted</button>`:""}</div>
       <button class="btn" id="xls">${ICON.sheet}Export Excel</button>
     </div>
     <div id="ac"><div class="empty">Loading…</div></div>`;
-  $("#mprev").onclick = () => { A.month = shiftMonth(A.month,-1); renderArchive(); };
-  $("#mnext").onclick = () => { if (A.month < cur){ A.month = shiftMonth(A.month,1); renderArchive(); } };
-  $("#abr").onchange = e => { A.branch = e.target.value; renderArchive(); };
-  document.querySelectorAll(".seg2 button").forEach(b => b.onclick = () => { A.mode = b.dataset.m; document.querySelectorAll(".seg2 button").forEach(x=>x.setAttribute("aria-pressed", x===b)); drawArchive(); });
+  $("#cr0").onclick = $("#cr2").onclick = () => { A.day = null; A.mode = "orders"; renderArchive(); };
+  $("#yprev").onclick = () => { A.month = (Number(y)-1) + "-12"; A.day = null; renderArchive(); };
+  $("#ynext").onclick = () => { const ny = String(Number(y)+1); A.month = ny === cur.slice(0,4) ? cur : ny + "-01"; A.day = null; renderArchive(); };
+  $("#abr").onchange = e => { A.branch = e.target.value; A.day = null; renderArchive(); };
+  document.querySelectorAll(".seg2 button").forEach(b => b.onclick = () => { A.mode = b.dataset.m; if (A.mode !== "orders") A.day = null; renderArchive(); });
   $("#xls").onclick = e => exportExcel(e.currentTarget);
   drawArchive(true);
 }
 async function drawArchive(first){
   const ac = $("#ac"); if (!ac) return;
-  let data;
-  try { data = await loadArchive(); } catch(e){ ac.innerHTML = `<div class="empty">${errMsg(e)}</div>`; return; }
-  const all = data.filter(o=>o.status!=="cancelled"), arch = all.filter(o=>o.archived_at);
-  $("#a1").textContent = arch.length; $("#a2").textContent = all.length; $("#a3").textContent = new Set(all.map(o=>o.branch_id)).size;
-  if (S.arch.mode === "summary") return drawSummary(ac, all);
-  if (!arch.length){ ac.innerHTML = `<div class="empty"><h3>Nothing archived in ${esc(monthLabel(S.arch.month))}</h3><p>${all.length ? `There ${all.length===1?"is 1 order":`are ${all.length} orders`} this month still on the board. Archive them from the board once the supplier has received them.` : "No orders were delivered this month."}</p>${all.length?`<button class="btn" onclick="S.arch.mode='summary';renderArchive()">See the monthly summary</button>`:""}</div>`; return; }
-  const days = [...new Set(arch.map(o=>o.delivery_date))];
-  ac.innerHTML = days.map(d => { const l = arch.filter(o=>o.delivery_date===d), dl = dayLabel(d);
-    return `<section class="aday"><div class="adh"><h3>${esc(dl.s)}</h3><span class="faint">${l.length} ${l.length===1?"order":"orders"}</span><button class="btn sm" data-pdf="${d}">PDF</button></div>
-      <div class="tw"><table class="t rt at"><colgroup><col style="width:11%"><col style="width:17%"><col style="width:8%"><col style="width:21%"><col style="width:23%"><col style="width:20%"></colgroup><thead><tr><th>No.</th><th>Branch</th><th>Items</th><th>Quantities</th><th>Status</th><th>Archived</th></tr></thead><tbody>
-      ${l.map(o=>`<tr data-id="${o.id}" tabindex="0"><td>${onum(o.id)}</td><td>${esc(bn(o.branch_name))}</td><td class="num">${o.items.length}</td><td class="num">${esc(unitTotals(o.items))}</td><td><span class="pill ${o.status}">${STATUS[o.status]}</span></td><td class="num faint">${esc(stampLabel(o.archived_at))}</td></tr>`).join("")}
-      </tbody></table></div></section>`; }).join("");
-  ac.querySelectorAll("[data-pdf]").forEach(b => b.onclick = () => downloadPdf(arch.filter(o=>o.delivery_date===b.dataset.pdf), b, true));
+  const A = S.arch, cur = bhDate(0).slice(0,7), y = A.month.slice(0,4);
+  let year;
+  try { year = await loadYear(); } catch(e){ ac.innerHTML = `<div class="empty">${errMsg(e)}</div>`; return; }
+  const live = year.filter(o => o.status !== "cancelled");
+  const months = Array.from({length:12}, (_,i) => `${y}-${String(i+1).padStart(2,"0")}`);
+  $("#mchips").innerHTML = months.map(m => { const n = live.filter(o => o.delivery_date.slice(0,7) === m).length;
+    return `<button type="button" class="mchip ${m===A.month?"on":""}" data-mo="${m}" ${m>cur?"disabled":""}>${esc(shortMonth(m))}${n?`<span class="num">${n}</span>`:""}</button>`; }).join("");
+  $("#mchips").querySelectorAll("[data-mo]").forEach(b => b.onclick = () => { A.month = b.dataset.mo; A.day = null; renderArchive(); });
+  const all = live.filter(o => o.delivery_date.slice(0,7) === A.month);
+  if (A.mode === "summary") return drawSummary(ac, all);
+  if (A.mode === "deleted") return drawDeleted(ac);
+  if (!all.length){ ac.innerHTML = `<div class="empty"><h3>The ${esc(monthLabel(A.month))} folder is empty</h3><p>No orders were delivered this month${A.branch?" for this branch":""}. Pick another month above.</p></div>`; return; }
+  if (!A.day){
+    const days = [...new Set(all.map(o => o.delivery_date))].sort().reverse();
+    ac.innerHTML = `<div class="fstats faint">${all.length} ${all.length===1?"order":"orders"} · ${days.length} ${days.length===1?"day":"days"} · ${new Set(all.map(o=>o.branch_id)).size} branches</div>
+      <div class="folders">${days.map(d => { const l = all.filter(o => o.delivery_date === d), brs = [...new Set(l.map(o => bn(o.branch_name)))];
+        return `<button type="button" class="folder" data-day="${d}"><span class="ficon">${FOLDER}</span><b>${esc(dayShort(d))}</b>
+          <span class="faint">${l.length} ${l.length===1?"order":"orders"} · ${brs.length} ${brs.length===1?"branch":"branches"}</span><span class="fbr">${esc(brs.join(", "))}</span></button>`; }).join("")}</div>`;
+    ac.querySelectorAll("[data-day]").forEach(b => b.onclick = () => { A.day = b.dataset.day; renderArchive(); });
+    if (first) animateIn("#ac .folder");
+    return;
+  }
+  const l = all.filter(o => o.delivery_date === A.day).sort((a,b) => bn(a.branch_name).localeCompare(bn(b.branch_name)) || a.id - b.id);
+  if (!l.length){ A.day = null; return drawArchive(first); }
+  ac.innerHTML = `<div class="adh"><h3>${esc(dayLabel(A.day).s)}</h3><span class="faint">${l.length} ${l.length===1?"order":"orders"}</span><button class="btn sm primary" id="daypdf">PDF for this day</button></div>
+    <div class="tw"><table class="t rt at"><colgroup><col style="width:11%"><col style="width:16%"><col style="width:8%"><col style="width:21%"><col style="width:30%"><col style="width:14%"></colgroup><thead><tr><th>No.</th><th>Branch</th><th>Items</th><th>Quantity</th><th>Status</th><th></th></tr></thead><tbody>
+    ${l.map(o=>`<tr data-id="${o.id}" tabindex="0"><td>${onum(o.id)}</td><td>${esc(bn(o.branch_name))}</td><td class="num">${o.items.length}</td><td class="num">${esc(unitTotals(o.items))}</td><td><span class="pill ${o.status}">${STATUS[o.status]}</span></td><td style="text-align:end"><button class="btn sm" data-opdf="${o.id}">PDF</button></td></tr>`).join("")}
+    </tbody></table></div>`;
+  $("#daypdf").onclick = e => downloadPdf(l, e.currentTarget, true);
+  ac.querySelectorAll("[data-opdf]").forEach(b => b.onclick = e => { e.stopPropagation(); downloadPdf([l.find(o => String(o.id) === b.dataset.opdf)], b); });
   ac.querySelectorAll("tbody tr").forEach(tr => {
-    const open = () => { const o = arch.find(x => String(x.id) === tr.dataset.id);
+    const open = () => { const o = l.find(x => String(x.id) === tr.dataset.id);
       const m = modal(orderCard(o, "supplier") + `<button class="btn ghost block" id="mc">Close</button>`);
       $("#mc", m).onclick = () => m.remove();
-      bindCards(m, [o], "supplier", () => { m.remove(); loadArchive(true).then(()=>drawArchive()); }); };
-    tr.onclick = open; tr.onkeydown = e => { if (e.key === "Enter") open(); };
+      bindCards(m, [o], "supplier", () => { m.remove(); loadYear(true).then(()=>drawArchive()); }); };
+    tr.onclick = open; tr.onkeydown = e => { if (e.key === "Enter" && e.target === tr) open(); };
   });
-  if (first) animateIn("#ac .aday");
+  if (first) animateIn("#ac tbody tr");
+}
+async function drawDeleted(ac){
+  ac.innerHTML = `<div class="empty">Loading…</div>`;
+  let L; try { L = await rpc("veg_deleted_list",{p_pin:S.session.pin}); } catch(e){ ac.innerHTML = `<div class="empty">${errMsg(e)}</div>`; return; }
+  if (S.arch.branch){ const bnm = (S.boot.branches.find(b=>b.id===S.arch.branch)||{}).name; L = L.filter(d => d.branch_name === bnm); }
+  if (!L.length){ ac.innerHTML = `<div class="empty"><h3>No deleted orders</h3><p>When an order is deleted, it shows here with who deleted it, when, and why.</p></div>`; return; }
+  ac.innerHTML = `<p class="faint" style="margin:12px 0 10px">Deletion log, newest first (all months).</p>
+    <div class="tw"><table class="t rt at"><colgroup><col style="width:22%"><col style="width:11%"><col style="width:15%"><col style="width:14%"><col style="width:26%"><col style="width:12%"></colgroup>
+    <thead><tr><th>Deleted</th><th>No.</th><th>Branch</th><th>Delivery</th><th>Reason</th><th>By</th></tr></thead><tbody>
+    ${L.map((d,ix)=>`<tr data-ix="${ix}" tabindex="0"><td class="num" style="white-space:normal">${esc(stampLabel(d.deleted_at))}</td><td>${onum(d.order_id)}</td><td>${esc(bn(d.branch_name))}</td><td class="num">${esc(dayShort(d.delivery_date))}</td><td style="white-space:normal">${esc(d.reason)}</td><td>${esc(ROLENAME[d.by]||d.by)}</td></tr>`).join("")}
+    </tbody></table></div>`;
+  ac.querySelectorAll("tbody tr").forEach(tr => { const open = () => { const d = L[tr.dataset.ix];
+      const m = modal(`<h2>Deleted order ${onum(d.order_id)}</h2><p class="muted" style="margin:0">${esc(bn(d.branch_name))} · delivery ${esc(dayLabel(d.delivery_date).s)}<br>Deleted ${esc(stampLabel(d.deleted_at))} by ${esc(ROLENAME[d.by]||d.by)} · “${esc(d.reason)}”</p>${linesTable(d.items||[])}<button class="btn ghost block" id="mc">Close</button>`);
+      $("#mc", m).onclick = () => m.remove(); };
+    tr.onclick = open; tr.onkeydown = e => { if (e.key === "Enter") open(); }; });
 }
 function pivot(list){
   const order = new Map(S.boot.items.map((i,ix)=>[i.name, ix]));
@@ -980,7 +1077,7 @@ function drawResults(){
       const m = modal(orderCard(o, S.session.role === "branch" ? "branch" : "supplier").replace('<details>','<details open>') + `<button class="btn ghost block" id="mc">Close</button>`);
       $("#mc", m).onclick = () => m.remove();
       bindCards(m, [o], S.session.role === "branch" ? "branch" : "supplier");
-      m.querySelectorAll("[data-a]").forEach(b => { if (!["pdf","wa"].includes(b.dataset.a)) b.addEventListener("click", () => setTimeout(() => { m.remove(); runSearch(); }, 700)); });
+      m.querySelectorAll("[data-a]").forEach(b => { if (!["pdf","wa","delete"].includes(b.dataset.a)) b.addEventListener("click", () => setTimeout(() => { m.remove(); runSearch(); }, 700)); });
     };
     tr.onclick = open; tr.onkeydown = e => { if (e.key === "Enter") open(); };
   });
